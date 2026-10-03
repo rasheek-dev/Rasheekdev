@@ -8,7 +8,7 @@ class Database {
     private $host = 'localhost'; // Hostinger usually uses localhost
     private $db_name = 'ul80950667_mentra_booking';
     private $db_user = 'ul80950667_mentra_user';
-    private $db_pass = 'Rasheek123#care@2026';
+    private $db_pass = 'MentraBooking#2026!';
     private $conn;
 
     /**
