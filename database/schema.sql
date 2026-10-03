@@ -101,6 +101,8 @@ CREATE TABLE `bookings` (
   `utm_medium` VARCHAR(100),
   `utm_campaign` VARCHAR(100),
   `notes` TEXT,
+  `google_meet_url` VARCHAR(255),
+  `google_meet_code` VARCHAR(100),
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `confirmed_at` DATETIME,

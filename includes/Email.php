@@ -77,12 +77,13 @@ class Email {
     private function getBookingConfirmationTemplate($booking) {
         $date = date('F j, Y', strtotime($booking['slot_date']));
         $time = date('g:i A', strtotime($booking['start_time']));
+        $meet_link = $booking['google_meet_url'] ?? 'https://meet.google.com/mentra-' . $booking['id'];
 
         return "
         <html>
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                <h2 style='color: #667bc6;'>Booking Confirmed!</h2>
+                <h2 style='color: #667bc6;'>Booking Confirmed! ✓</h2>
 
                 <p>Dear {$booking['client_name']},</p>
 
@@ -95,6 +96,21 @@ class Email {
                     <p><strong>Time:</strong> {$time}</p>
                     <p><strong>Amount Paid:</strong> ₹{$booking['final_amount']}</p>
                 </div>
+
+                <div style='background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #667bc6;'>
+                    <h3 style='color: #667bc6;'>Join Your Session:</h3>
+                    <p>Click the link below to join your video session at the scheduled time:</p>
+                    <p style='margin-top: 15px;'>
+                        <a href='{$meet_link}' style='display: inline-block; background: #667bc6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                            📹 Join Google Meet
+                        </a>
+                    </p>
+                    <p style='font-size: 12px; color: #666; margin-top: 10px;'>
+                        or copy this link: {$meet_link}
+                    </p>
+                </div>
+
+                <p><strong>Important:</strong> Please join 5 minutes before your scheduled time.</p>
 
                 <p>If you need to reschedule or cancel, please contact us at least 24 hours before your session.</p>
 
