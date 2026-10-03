@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+# The ad landing pages are kept out of Google with a noindex tag on each page (not blocked here, so Meta can still check them).
