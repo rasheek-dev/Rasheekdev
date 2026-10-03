@@ -4,14 +4,14 @@
  */
 
 define('APP_NAME', 'Mentra');
-define('APP_URL', 'https://yourdomain.com'); // Update with your domain
+define('APP_URL', 'https://mentracare.in'); // Update with your domain
 define('APP_ENV', 'production'); // 'development' or 'production'
 
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'YOUR_DATABASE_NAME');
-define('DB_USER', 'YOUR_DATABASE_USER');
-define('DB_PASS', 'YOUR_DATABASE_PASSWORD');
+define('DB_NAME', 'ul80950667_mentra_booking');
+define('DB_USER', 'ul80950667_mentra_user');
+define('DB_PASS', 'PASTE_YOUR_PASSWORD_HERE');
 
 // Razorpay Configuration
 // Get your keys from: https://dashboard.razorpay.com/app/keys
@@ -19,17 +19,17 @@ define('RAZORPAY_KEY_ID', 'rzp_test_XXXXXXXXXXXXXX'); // Replace with your key
 define('RAZORPAY_KEY_SECRET', 'XXXXXXXXXXXXXXXXXXXXXX'); // Replace with your secret
 
 // Email Configuration
-define('MAIL_FROM', 'noreply@yourdomain.com');
+define('MAIL_FROM', 'noreply@mentracare.in');
 define('MAIL_FROM_NAME', 'Mentra');
-define('ADMIN_EMAIL', 'admin@yourdomain.com');
-define('SUPPORT_EMAIL', 'support@yourdomain.com');
+define('ADMIN_EMAIL', 'admin@mentracare.in');
+define('SUPPORT_EMAIL', 'support@mentracare.in');
 
 // Business Details
 define('BUSINESS_NAME', 'Mentra');
-define('BUSINESS_PHONE', '+91 XXXXXXXXXX');
-define('BUSINESS_EMAIL', 'contact@yourdomain.com');
-define('BUSINESS_ADDRESS', 'Your Address');
-define('WHATSAPP_NUMBER', '+91 XXXXXXXXXX'); // Set empty if not available
+define('BUSINESS_PHONE', '+91 XXXXXXXXXX'); // UPDATE THIS
+define('BUSINESS_EMAIL', 'contact@mentracare.in');
+define('BUSINESS_ADDRESS', 'Your Address'); // UPDATE THIS
+define('WHATSAPP_NUMBER', '+91 XXXXXXXXXX'); // UPDATE THIS / Set empty if not available
 
 // Booking Settings
 define('REQUIRE_PAYMENT', true); // false = confirm without payment
