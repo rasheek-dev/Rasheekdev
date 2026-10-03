@@ -11,7 +11,7 @@ define('APP_ENV', 'production'); // 'development' or 'production'
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'ul80950667_mentra_booking');
 define('DB_USER', 'ul80950667_mentra_user');
-define('DB_PASS', 'PASTE_YOUR_PASSWORD_HERE');
+define('DB_PASS', 'Rasheek123#care@2026');
 
 // Razorpay Configuration
 // Get your keys from: https://dashboard.razorpay.com/app/keys
