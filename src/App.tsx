@@ -43,7 +43,7 @@ export default function App() {
     try {
       const clientsResponse = await apiClient.getClients();
       if (clientsResponse.success && clientsResponse.data) {
-        setClients(clientsResponse.data);
+        setClients(clientsResponse.data as Client[]);
       }
 
       const reportsResponse = await apiClient.getReports();
@@ -89,7 +89,7 @@ export default function App() {
     try {
       const response = await apiClient.createClient(client);
       if (response.success && response.data) {
-        setClients([...clients, response.data]);
+        setClients([...clients, response.data as Client]);
       }
     } catch (err) {
       console.error('Failed to add client:', err);
@@ -108,7 +108,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Failed to update client:', err);
-      setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+      setClients(clients.map((c: Client) => c.id === updatedClient.id ? updatedClient : c));
     } finally {
       setIsLoading(false);
     }
@@ -119,7 +119,7 @@ export default function App() {
     try {
       const response = await apiClient.createSessionNote(note.client_id, note);
       if (response.success && response.data) {
-        setSessionNotes([...sessionNotes, response.data]);
+        setSessionNotes([...sessionNotes, response.data as SessionNote]);
       }
     } catch (err) {
       console.error('Failed to add session note:', err);
@@ -134,7 +134,7 @@ export default function App() {
     try {
       const response = await apiClient.sendAssessment(assessment.client_id, assessment);
       if (response.success && response.data) {
-        setAssessments([...assessments, response.data]);
+        setAssessments([...assessments, response.data as Assessment]);
       }
     } catch (err) {
       console.error('Failed to add assessment:', err);
@@ -196,8 +196,8 @@ export default function App() {
           <ClientDetailView
             client={selectedClient}
             currentUser={currentUser}
-            sessionNotes={sessionNotes.filter(n => n.client_id === selectedClient.id)}
-            assessments={assessments.filter(a => a.client_id === selectedClient.id)}
+            sessionNotes={sessionNotes.filter((n: SessionNote) => n.client_id === selectedClient.id)}
+            assessments={assessments.filter((a: Assessment) => a.client_id === selectedClient.id)}
             onBack={handleBackToClients}
             onAddNote={handleAddSessionNote}
             onEditNote={handleEditSessionNote}
