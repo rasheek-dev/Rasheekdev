@@ -3,8 +3,8 @@
 // Hostinger hPanel > Databases > Management.
 return [
     'db_host' => 'localhost',
-    'db_name' => 'ul80950667_mentra_booking',
-    'db_user' => 'ul80950667_mentra_user',
-    'db_pass' => 'MentraBooking#2026!',
+    'db_name' => 'u180950667_mentra',
+    'db_user' => 'u180950667_mentra',
+    'db_pass' => 'PASTE_DATABASE_PASSWORD_HERE',
     'timezone' => 'Asia/Kolkata',
 ];
