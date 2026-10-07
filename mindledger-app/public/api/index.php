@@ -8,6 +8,30 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 
+// Fallbacks for hosts without the mbstring extension or on PHP 7.x.
+if (!function_exists('mb_substr')) {
+    function mb_substr(string $s, int $start, ?int $length = null): string
+    {
+        if (preg_match_all('/./us', $s, $m) === false) {
+            return substr($s, $start, $length ?? strlen($s));
+        }
+        return implode('', array_slice($m[0], $start, $length));
+    }
+}
+if (!function_exists('mb_strlen')) {
+    function mb_strlen(string $s): int
+    {
+        $n = preg_match_all('/./us', $s);
+        return $n === false ? strlen($s) : $n;
+    }
+}
+if (!function_exists('str_starts_with')) {
+    function str_starts_with(string $haystack, string $needle): bool
+    {
+        return strncmp($haystack, $needle, strlen($needle)) === 0;
+    }
+}
+
 const CONSENT_VERSION = 'DPDP-V1.2-2024';
 const SESSION_HOURS = 12;
 const STAFF_ROLES = ['clinician', 'psychologist', 'front_desk', 'coordinator'];
@@ -44,7 +68,8 @@ set_exception_handler(function (Throwable $e) {
         respond($e->status, ['ok' => false, 'error' => $e->getMessage(), 'code' => $e->codeName]);
     }
     error_log('MindLedger API: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
-    respond(500, ['ok' => false, 'error' => 'Server error. Please try again.', 'code' => 'server_error']);
+    $detail = get_class($e) . ': ' . $e->getMessage() . ' (line ' . $e->getLine() . ', PHP ' . PHP_VERSION . ')';
+    respond(500, ['ok' => false, 'error' => 'Server error: ' . substr($detail, 0, 400), 'code' => 'server_error']);
 });
 
 // ------------------------------------------------------------------ Setup
