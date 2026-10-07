@@ -108,6 +108,12 @@ function db(): PDO
 function migrate(): void
 {
     $pdo = db();
+    // An earlier MindLedger build created ml_records with a different layout; keep it under another name.
+    $legacy = $pdo->query("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ml_records'")->fetchColumn() > 0
+        && $pdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ml_records' AND COLUMN_NAME = 'kind'")->fetchColumn() == 0;
+    if ($legacy) {
+        $pdo->exec('RENAME TABLE ml_records TO ml_records_legacy_' . date('YmdHis'));
+    }
     $pdo->exec("CREATE TABLE IF NOT EXISTS ml_clinics (
         id VARCHAR(32) PRIMARY KEY,
         owner_id VARCHAR(32) NOT NULL,
