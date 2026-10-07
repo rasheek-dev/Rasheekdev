@@ -23,9 +23,18 @@ $configPath = dirname(__DIR__, 2) . '/config/Database.php';
 if (!file_exists($configPath)) {
     fail(500, 'Mentra config/Database.php not found at ' . $configPath);
 }
+$pdo = null;
+// Mentra's Database::connect() calls die() on failure; return JSON instead.
+register_shutdown_function(function () use (&$pdo) {
+    if ($pdo === null) {
+        while (ob_get_level()) ob_end_clean();
+        fail(500, 'Database connection failed. Check public_html/config/Database.php or open setup.php');
+    }
+});
+ob_start();
 require_once $configPath;
-
 $pdo = (new Database())->getConnection();
+ob_end_clean();
 
 $pdo->exec("CREATE TABLE IF NOT EXISTS ml_tokens (
     token CHAR(64) PRIMARY KEY,
