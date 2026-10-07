@@ -430,10 +430,7 @@ function getAssessmentByToken(string $token, bool $forUpdate = false): ?array
 }
 
 // ------------------------------------------------------------------ Mentra website link
-// Psychologists listed in the website's psychologists.js get MindLedger psychologist
-// accounts, and the website's booking page posts every completed booking here. Clients
-// are matched by phone or email, so a follow-up booking lands in the same file with all
-// earlier reports, and the file follows the psychologist of the latest booking.
+// Psychologists listed in the website's psychologists.js get MindLedger psychologist accounts.
 
 function websitePsychologistsFile(): string
 {
@@ -606,21 +603,6 @@ function phoneKey(?string $phone): string
     return strlen($digits) >= 10 ? substr($digits, -10) : '';
 }
 
-function findClientForBooking(string $clinicId, string $phone, string $email): ?array
-{
-    $phone = phoneKey($phone);
-    $email = strtolower(trim($email));
-    foreach (listRecords('client', $clinicId) as $c) {
-        if (!empty($c['anonymized'])) {
-            continue;
-        }
-        if (($phone !== '' && phoneKey($c['phone'] ?? '') === $phone) || ($email !== '' && strtolower((string)($c['email'] ?? '')) === $email)) {
-            return $c;
-        }
-    }
-    return null;
-}
-
 function reassignClient(array $client, string $clinicianId): array
 {
     $client['assigned_clinician_id'] = $clinicianId;
@@ -634,151 +616,6 @@ function reassignClient(array $client, string $clinicianId): array
         }
     }
     return $client;
-}
-
-function razorpayVerified(array $body): bool
-{
-    global $config;
-    $secret = (string)($config['razorpay_key_secret'] ?? '');
-    $order = (string)($body['razorpay_order_id'] ?? '');
-    $payment = (string)($body['razorpay_payment_id'] ?? '');
-    $signature = (string)($body['razorpay_signature'] ?? '');
-    if ($secret === '' || $order === '' || $payment === '' || $signature === '') {
-        return false;
-    }
-    return hash_equals(hash_hmac('sha256', $order . '|' . $payment, $secret), $signature);
-}
-
-function tooManyPublicBookings(): bool
-{
-    $pdo = db();
-    $pdo->prepare('DELETE FROM ml_login_attempts WHERE attempted_at < ?')->execute([date('Y-m-d H:i:s', time() - 3600)]);
-    $key = 'booking:' . clientIp();
-    $stmt = $pdo->prepare('SELECT COUNT(*) FROM ml_login_attempts WHERE ip = ?');
-    $stmt->execute([$key]);
-    if ((int)$stmt->fetchColumn() >= 20) {
-        return true;
-    }
-    $pdo->prepare('INSERT INTO ml_login_attempts (ip, attempted_at) VALUES (?, ?)')->execute([substr($key, 0, 64), nowSql()]);
-    return false;
-}
-
-const CONCERN_LABELS = [
-    'anxiety' => 'Anxiety & stress', 'depression' => 'Low mood', 'relationships' => 'Relationships', 'family' => 'Family',
-    'selfesteem' => 'Self-esteem', 'overthinking' => 'Overthinking', 'anger' => 'Anger', 'parenting' => 'Parenting',
-    'child' => 'Child & teen', 'career' => 'Work & studies', 'trauma' => 'Life changes', 'sexual' => 'Intimacy',
-    'addiction' => 'Addiction',
-];
-const WHO_LABELS = ['partner' => 'For their partner', 'child' => 'For their child', 'family' => 'For their family', 'other' => 'For someone else'];
-
-function importWebsiteBooking(array $body): array
-{
-    $pdo = db();
-    $clinicId = $pdo->query('SELECT id FROM ml_clinics ORDER BY created_at LIMIT 1')->fetchColumn();
-    if (!$clinicId) {
-        fail(409, 'MindLedger is not set up yet.');
-    }
-    $psyMap = syncWebsitePsychologists($clinicId);
-    $proId = str($body, 'proId', 60);
-    if (!isset($psyMap[$proId])) {
-        fail(400, 'Unknown psychologist.');
-    }
-    $clinicianId = $psyMap[$proId]['user_id'];
-    $name = str($body, 'name', 150);
-    $phone = str($body, 'phone', 40);
-    $email = strtolower(str($body, 'email', 190));
-    $date = str($body, 'date', 10);
-    $time = str($body, 'time', 5);
-    if ($name === '' || phoneKey($phone) === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || !preg_match('/^\d{2}:\d{2}$/', $time)) {
-        fail(400, 'Booking details are incomplete.');
-    }
-    $ref = str($body, 'ref', 40);
-    $minutes = (int)($body['durationMin'] ?? 0) ?: ($psyMap[$proId]['minutes'] ?: 60);
-    $minutes = max(15, min(240, $minutes));
-    $end = date('H:i', strtotime("$date $time") + $minutes * 60);
-    $sessionId = 'web-' . substr(hash('sha256', $ref . '|' . $proId . '|' . $date . ' ' . $time . '|' . phoneKey($phone)), 0, 40);
-
-    $concernKeys = is_array($body['concerns'] ?? null) ? $body['concerns'] : [];
-    $concerns = [];
-    foreach (array_slice($concernKeys, 0, 15) as $k) {
-        if (is_string($k) && $k !== 'other') {
-            $concerns[] = CONCERN_LABELS[$k] ?? ucfirst(preg_replace('/[^a-z ]/i', '', $k));
-        }
-    }
-    $who = str($body, 'who', 20);
-    $concernText = implode(', ', array_filter($concerns));
-    if (isset(WHO_LABELS[$who])) {
-        $concernText = WHO_LABELS[$who] . ($concernText !== '' ? ': ' . $concernText : '');
-    }
-    $paymentId = str($body, 'paymentId', 60);
-    $verified = razorpayVerified($body);
-
-    $pdo->beginTransaction();
-    if (getRecord('session', $sessionId, $clinicId, true)) {
-        $pdo->commit();
-        return ['duplicate' => true];
-    }
-    $client = findClientForBooking($clinicId, $phone, $email);
-    $bookingAt = "$date $time";
-    $ageRange = str($body, 'ageRange', 20);
-    if (!$client) {
-        $client = [
-            'id' => newId(),
-            'clinic_id' => $clinicId,
-            'name' => $name,
-            'phone' => $phone,
-            'email' => $email,
-            'date_of_birth' => '',
-            'age_range' => $ageRange,
-            'emergency_contact_name' => 'Not provided',
-            'emergency_contact_phone' => 'Not provided',
-            'assigned_clinician_id' => $clinicianId,
-            'is_minor' => $who === 'child' || preg_match('/^(under|<)\s*18|^1[0-7]\b/i', $ageRange) === 1,
-            'consent_status' => 'pending',
-            'status' => 'active',
-            'created_at' => date('Y-m-d'),
-            'source' => 'website',
-            'intake_concerns' => $concernText,
-            'last_booking_at' => $bookingAt,
-        ];
-        saveRecord('client', $client, true);
-    } else {
-        if ($bookingAt >= ($client['last_booking_at'] ?? '')) {
-            // The most recent booking decides who the client's psychologist is now.
-            $client['last_booking_at'] = $bookingAt;
-            if (empty($client['intake_concerns']) && $concernText !== '') {
-                $client['intake_concerns'] = $concernText;
-            }
-            if (($client['status'] ?? '') === 'inactive' && empty($client['anonymized'])) {
-                $client['status'] = 'active';
-            }
-            if ($client['assigned_clinician_id'] !== $clinicianId) {
-                $client = reassignClient($client, $clinicianId);
-            } else {
-                saveRecord('client', $client, false);
-            }
-        }
-    }
-    saveRecord('session', [
-        'id' => $sessionId,
-        'clinic_id' => $clinicId,
-        'client_id' => $client['id'],
-        'assigned_clinician_id' => $client['assigned_clinician_id'],
-        'clinician_id' => $clinicianId,
-        'booking_code' => $ref,
-        'date' => $date,
-        'start_time' => $time,
-        'end_time' => $end,
-        'status' => 'confirmed',
-        'payment_id' => $paymentId,
-        'payment_verified' => $verified,
-        'concerns' => $concernText,
-        'meet_url' => '',
-        'source' => 'website',
-        'received_at' => isoNow(),
-    ], true);
-    $pdo->commit();
-    return ['duplicate' => false];
 }
 
 // ------------------------------------------------------------------ Routing
@@ -933,6 +770,17 @@ switch ($route) {
                 $dpdp = listRecords('dpdp', $cid);
             }
         }
+        $counts = db()->prepare("SELECT client_id, COUNT(*) AS n, MAX(created_at) AS last_at FROM ml_records WHERE kind = 'note' AND clinic_id = ? GROUP BY client_id");
+        $counts->execute([$cid]);
+        $reportCounts = [];
+        foreach ($counts->fetchAll() as $row) {
+            $reportCounts[$row['client_id']] = $row;
+        }
+        foreach ($clients as &$c) {
+            $c['reports_count'] = (int)($reportCounts[$c['id']]['n'] ?? 0);
+            $c['last_report_at'] = $reportCounts[$c['id']]['last_at'] ?? null;
+        }
+        unset($c);
         usort($clients, fn($a, $b) => strcasecmp($a['name'], $b['name']));
         $consents = array_reverse(listRecords('consent', $cid));
 
@@ -1104,6 +952,38 @@ switch ($route) {
         audit($me, 'CLIENT_CREATED', 'Client', $id, "Registered client file for $name.");
         $pdo->commit();
         respond(201, ['ok' => true, 'client' => $client]);
+    }
+
+    case 'POST clients/:id/assign': {
+        $me = currentUser();
+        if (isClinicianRole($me)) {
+            fail(403, 'Only the clinic owner or front desk can assign clients.');
+        }
+        $assigned = str($body, 'assigned_clinician_id', 32);
+        $stmt = db()->prepare("SELECT data FROM ml_users WHERE id = ? AND clinic_id = ? AND active = 1 AND role IN ('owner', 'clinician', 'psychologist')");
+        $stmt->execute([$assigned, $me['clinic_id']]);
+        $psych = $stmt->fetch();
+        if (!$psych) {
+            fail(400, 'Please choose a psychologist.');
+        }
+        $pdo = db();
+        $pdo->beginTransaction();
+        $client = visibleClient($me, $parts[1], true);
+        if (!empty($client['anonymized'])) {
+            fail(409, 'This client file was erased under DPDP and cannot be reused. Please register the client again.');
+        }
+        $previous = $client['assigned_clinician_id'];
+        $client['status'] = 'active';
+        $client['last_visit_at'] = isoNow();
+        if ($previous !== $assigned) {
+            $client = reassignClient($client, $assigned);
+        } else {
+            saveRecord('client', $client, false);
+        }
+        $psychName = (json_decode($psych['data'], true) ?: [])['name'] ?? 'psychologist';
+        audit($me, 'CLIENT_ASSIGNED', 'Client', $client['id'], "Returning client {$client['name']} assigned to $psychName.");
+        $pdo->commit();
+        respond(200, ['ok' => true, 'client' => $client]);
     }
 
     case 'POST clients/:id/consent-withdraw': {
@@ -1343,14 +1223,6 @@ switch ($route) {
         saveRecord('assessment', $assessment, true);
         audit($me, 'ASSESSMENT_SENT', 'Assessment', $token, "Issued $type link for {$client['name']}.");
         respond(201, ['ok' => true, 'assessment' => $assessment]);
-    }
-
-    case 'POST public/website-booking': {
-        if (tooManyPublicBookings()) {
-            fail(429, 'Too many requests.');
-        }
-        $result = importWebsiteBooking($body);
-        respond(200, ['ok' => true, 'duplicate' => $result['duplicate']]);
     }
 
     case 'GET public/assessment/:id': {

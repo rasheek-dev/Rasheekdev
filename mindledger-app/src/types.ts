@@ -65,6 +65,9 @@ export interface Client {
   age_at_intake?: number | null;
   age_range?: string;
   last_booking_at?: string;
+  last_visit_at?: string;
+  reports_count?: number;
+  last_report_at?: string | null;
 }
 
 export interface WebSession {

@@ -7,7 +7,4 @@ return [
     'db_user' => 'u180950667_mentra',
     'db_pass' => 'PASTE_DATABASE_PASSWORD_HERE',
     'timezone' => 'Asia/Kolkata',
-    // Optional: your Razorpay Key Secret (Razorpay Dashboard > Settings > API Keys). When set,
-    // website bookings are checked against Razorpay and marked "Payment verified".
-    'razorpay_key_secret' => '',
 ];

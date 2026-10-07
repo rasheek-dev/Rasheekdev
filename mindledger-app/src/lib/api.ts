@@ -195,6 +195,11 @@ export async function createClient(input: Omit<Client, 'id' | 'clinic_id' | 'sta
   return data.client;
 }
 
+export async function assignClient(client: Client, clinicianId: string): Promise<Client> {
+  const data = await call<{ client: Client }>('POST', `clients/${client.id}/assign`, { assigned_clinician_id: clinicianId });
+  return data.client;
+}
+
 export async function withdrawConsent(client: Client, purpose: string, reason: string) {
   const data = await call<{ record: ConsentRecord }>('POST', `clients/${client.id}/consent-withdraw`, { purpose, reason });
   return data.record;

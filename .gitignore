@@ -41,4 +41,3 @@ lerna-debug.log*
 # Build output and emulator logs
 mindledger-upload.zip
 *-debug.log
-mentra-website-update.zip

@@ -1,19 +1,41 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { Client, User } from '../types';
-import { createClient } from '../lib/api';
+import React, { useMemo, useState } from 'react';
+import { X, Search, UserCheck, ArrowLeft, FileText, Lock, ClipboardCheck } from 'lucide-react';
+import { Assessment, Client, SessionNote, User } from '../types';
+import { createClient, assignClient } from '../lib/api';
 
 interface NewClientModalProps {
   clinicians: User[];
+  clients: Client[];
+  notes: SessionNote[];
+  assessments: Assessment[];
+  canSeeReports: boolean;
   onClose: () => void;
   onSuccess: (client: Client) => void;
 }
 
+const digitsOf = (s: string) => s.replace(/\D/g, '');
+const last10 = (s: string) => digitsOf(s).slice(-10);
+
+function matchesPhone(client: Client, query: string): boolean {
+  const q = digitsOf(query);
+  if (q.length < 4 || client.anonymized) return false;
+  const phone = digitsOf(client.phone || '');
+  return phone.includes(q.length > 10 ? q.slice(-10) : q);
+}
+
 export const NewClientModal: React.FC<NewClientModalProps> = ({
   clinicians,
+  clients,
+  notes,
+  assessments,
+  canSeeReports,
   onClose,
   onSuccess,
 }) => {
+  const [search, setSearch] = useState('');
+  const [existing, setExisting] = useState<Client | null>(null);
+  const searchResults = useMemo(() => clients.filter((c) => matchesPhone(c, search)).slice(0, 6), [clients, search]);
+
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('+91 ');
   const [email, setEmail] = useState('');
@@ -27,6 +49,8 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
   const [consentGranted, setConsentGranted] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const duplicate = last10(phone).length === 10 ? clients.find((c) => !c.anonymized && last10(c.phone || '') === last10(phone)) : undefined;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,10 +87,72 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-bold text-slate-900">Add New Client File</h3>
+          <h3 className="text-base font-bold text-slate-900">{existing ? 'Returning Client' : 'Add Client'}</h3>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-700">
             <X className="w-4 h-4" />
           </button>
+        </div>
+
+        {existing ? (
+          <ReturningClient
+            client={existing}
+            clinicians={clinicians}
+            notes={notes}
+            assessments={assessments}
+            canSeeReports={canSeeReports}
+            onBack={() => setExisting(null)}
+            onDone={onSuccess}
+          />
+        ) : (
+        <>
+        <div className="p-3 bg-[#f4f3fe]/60 border border-[#d4d0fb] rounded-xl space-y-2 text-xs">
+          <label className="font-semibold text-[#281e80] flex items-center gap-1.5">
+            <Search className="w-3.5 h-3.5" />
+            Returning client? Search by phone number
+          </label>
+          <input
+            type="tel"
+            inputMode="tel"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Type at least 4 digits, e.g. 98765"
+            className="w-full px-3 py-2 rounded-xl border border-[#d4d0fb] bg-white focus:ring-2 focus:ring-[#5749e2] focus:outline-none"
+          />
+          {digitsOf(search).length >= 4 && searchResults.length === 0 && (
+            <p className="text-[11px] text-slate-500">No existing client with that number. Fill in the form below to register them.</p>
+          )}
+          {searchResults.length > 0 && (
+            <div className="space-y-1.5">
+              {searchResults.map((c) => {
+                const psych = clinicians.find((u) => u.id === c.assigned_clinician_id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setExisting(c)}
+                    className="w-full text-left p-2.5 rounded-lg bg-white border border-slate-200 hover:border-[#5749e2] flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 truncate">{c.name}</div>
+                      <div className="text-[11px] text-slate-500 truncate">
+                        {c.phone} &bull; {psych?.name || 'Unassigned'} &bull; {c.reports_count ?? 0} report{(c.reports_count ?? 0) === 1 ? '' : 's'}
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-[#5749e2] shrink-0 inline-flex items-center gap-1">
+                      <UserCheck className="w-3.5 h-3.5" />
+                      Select
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-slate-400">
+          <span className="flex-1 border-t border-slate-200" />
+          or register a new client
+          <span className="flex-1 border-t border-slate-200" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
@@ -94,6 +180,15 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#5749e2] focus:outline-none"
               />
+              {duplicate && (
+                <button
+                  type="button"
+                  onClick={() => setExisting(duplicate)}
+                  className="mt-1 w-full text-left text-[11px] p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900"
+                >
+                  This number belongs to <strong>{duplicate.name}</strong>. Tap to open their existing file instead.
+                </button>
+              )}
             </div>
             <div>
               <label className="block font-semibold text-slate-700 mb-1">Email Address</label>
@@ -238,7 +333,162 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
             </button>
           </div>
         </form>
+        </>
+        )}
       </div>
     </div>
   );
 };
+
+function ReturningClient({
+  client,
+  clinicians,
+  notes,
+  assessments,
+  canSeeReports,
+  onBack,
+  onDone,
+}: {
+  client: Client;
+  clinicians: User[];
+  notes: SessionNote[];
+  assessments: Assessment[];
+  canSeeReports: boolean;
+  onBack: () => void;
+  onDone: (client: Client) => void;
+}) {
+  const [clinicianId, setClinicianId] = useState(
+    clinicians.some((c) => c.id === client.assigned_clinician_id) ? client.assigned_clinician_id : clinicians[0]?.id || ''
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const current = clinicians.find((c) => c.id === client.assigned_clinician_id);
+  const reports = notes
+    .filter((n) => n.client_id === client.id)
+    .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  const scores = assessments
+    .filter((a) => a.client_id === client.id && a.status === 'completed')
+    .sort((a, b) => (b.completed_at_iso || '').localeCompare(a.completed_at_iso || ''));
+  const reportCount = canSeeReports ? reports.length : client.reports_count ?? 0;
+
+  const handleAssign = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      onDone(await assignClient(client, clinicianId));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4 text-xs">
+      <button type="button" onClick={onBack} className="font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1">
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Back to search
+      </button>
+
+      <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+        <div className="text-sm font-bold text-slate-900">{client.name}</div>
+        <div className="text-slate-500">
+          {client.phone}
+          {client.email ? ` \u2022 ${client.email}` : ''}
+          {client.date_of_birth ? ` \u2022 DOB ${client.date_of_birth}` : ''}
+        </div>
+        <div className="text-slate-600">
+          First visit {client.created_at} &bull; Last psychologist: <strong>{current?.name || 'Unassigned'}</strong>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-[#5749e2]" />
+          Previous reports ({reportCount})
+        </h4>
+        {!canSeeReports ? (
+          <p className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-900 flex items-start gap-2">
+            <Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span>
+              Report contents are visible only to the psychologist and the clinic owner. The psychologist you assign below will
+              see all {reportCount} earlier report{reportCount === 1 ? '' : 's'} in the client file.
+            </span>
+          </p>
+        ) : reports.length === 0 ? (
+          <p className="text-slate-400">No reports yet.</p>
+        ) : (
+          <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+            {reports.map((n) => (
+              <div key={n.id} className="p-2.5 rounded-lg border border-slate-200 bg-white">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-slate-800">
+                    {(n.signed_at || n.created_at?.split('T')[0]) ?? ''} &bull; {n.template_type}
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                      n.status === 'signed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                    }`}
+                  >
+                    {n.status === 'signed' ? 'Signed' : 'Draft'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500">{n.clinician_name || clinicians.find((c) => c.id === n.clinician_id)?.name || ''}</div>
+                <p className="text-slate-600 line-clamp-2 mt-0.5">
+                  {n.content?.assessment || n.content?.text || n.content?.subjective || n.content?.data || 'No text'}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+        {canSeeReports && scores.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {scores.slice(0, 4).map((a) => (
+              <span key={a.id} className="px-2 py-0.5 rounded-full bg-[#f4f3fe] text-[#392cb3] border border-[#d4d0fb] text-[10px] font-semibold inline-flex items-center gap-1">
+                <ClipboardCheck className="w-3 h-3" />
+                {a.type === 'PHQ9' ? 'PHQ-9' : 'GAD-7'} {a.score} ({a.severity_band}) &bull; {a.completed_at}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <label className="block font-semibold text-slate-700 mb-1">Assign to psychologist for this visit</label>
+        <select
+          value={clinicianId}
+          onChange={(e) => setClinicianId(e.target.value)}
+          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#5749e2] focus:outline-none"
+        >
+          {clinicians.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+              {c.id === client.assigned_clinician_id ? ' (current)' : ''}
+            </option>
+          ))}
+        </select>
+        {clinicianId !== client.assigned_clinician_id && (
+          <p className="text-[11px] text-slate-500 mt-1">
+            The client file and all earlier reports move to this psychologist.
+          </p>
+        )}
+      </div>
+
+      {error && <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl">{error}</div>}
+
+      <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onClick={onBack} className="px-4 py-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-xl">
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleAssign}
+          disabled={saving || !clinicianId}
+          className="px-5 py-2 bg-[#5749e2] hover:bg-[#4738cf] disabled:opacity-50 text-white font-semibold rounded-xl shadow-sm"
+        >
+          {saving ? 'Saving...' : 'Assign & Open File'}
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -443,6 +443,10 @@ function Workspace({
       {showClientModal && !userIsPsychologist && (
         <NewClientModal
           clinicians={clinicians}
+          clients={clients}
+          notes={notes}
+          assessments={assessments}
+          canSeeReports={userIsOwner}
           onClose={() => setShowClientModal(false)}
           onSuccess={(client) => {
             setShowClientModal(false);

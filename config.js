@@ -4,10 +4,6 @@ window.MENTRA_CONFIG = {
   // Change yourdomain.com to your actual domain
   BOOKING_API_URL: "https://yourdomain.com/api",
 
-  // MindLedger (client records). Every completed booking is copied into MindLedger at this address.
-  // Leave as "/mindledger/" when MindLedger is installed in public_html/mindledger. Empty "" turns it off.
-  MINDLEDGER_URL: "/mindledger/",
-
   // Meta (Facebook) Pixel ID, for ad measurement
   META_PIXEL_ID: "YOUR_META_PIXEL_ID",
 
