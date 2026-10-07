@@ -1,13 +1,160 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="MindLedger Lite - Client Reports & Assessments Platform" />
-    <title>MindLedger Lite - Client Management</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en" data-base="">
+<head>
+<meta charset="utf-8">
+<script>document.documentElement.className+=' js'</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mentra | Online Counselling and Therapy with Licensed Psychologists</title>
+<meta name="description" content="Private online counselling and therapy with licensed psychologists in Malayalam and English. Choose your psychologist, book a time and start from home.">
+<meta name="theme-color" content="#5749E2">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Mentra"><meta property="og:title" content="Mentra | Online Counselling and Therapy with Licensed Psychologists"><meta property="og:description" content="Private online counselling and therapy with licensed psychologists in Malayalam and English. Choose your psychologist, book a time and start from home."><meta property="og:image" content="assets/og-image.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png"><link rel="icon" type="image/png" sizes="256x256" href="assets/icon-256.png"><link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<!-- AFTER YOU CHANGE A FILE: raise its number (v=1 to v=2) on its line so visitors get the new version. -->
+<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="footer.css?v=1">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is what I share confidential?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. What you share with your psychologist is confidential, within the limits of the law and professional ethics (for example, where someone's safety is at serious risk). Read our Privacy Policy for details."}}, {"@type": "Question", "name": "How do online sessions work?", "acceptedAnswer": {"@type": "Answer", "text": "Choose a time on our booking page and pay securely online. We then send your private session link on WhatsApp. At your time, join by video or voice from your phone or computer."}}, {"@type": "Question", "name": "How long is a session, and what does it cost?", "acceptedAnswer": {"@type": "Answer", "text": "Sessions are usually 45 to 50 minutes. Each psychologist's fee is shown on their profile, so you know it before you book."}}, {"@type": "Question", "name": "Can I choose my psychologist and language?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. You can tell us your concern, language and preferences, and we show psychologists who match. You choose who to book with."}}, {"@type": "Question", "name": "Can I change or cancel a booking?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Our Refund & Cancellation Policy explains when you can reschedule or get a refund."}}, {"@type": "Question", "name": "Is Mentra an emergency service?", "acceptedAnswer": {"@type": "Answer", "text": "No. If you or someone else is in danger, call 112."}}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hdr"><div class="wrap hdr-in">
+<a class="logo" href="./" aria-label="Mentra home"><img src="assets/mentra-logo.png" alt="Mentra" width="144" height="36"></a>
+<nav class="nav" id="nav" aria-label="Main"><a href="about/">About</a><a href="services/">Services</a><a href="psychologists/">Psychologists</a><a href="#faq">FAQ</a><a href="contact.html">Contact</a><a class="navbook" href="book/" data-book="menu">Book a session</a></nav>
+<a class="btn primary sm hbook" href="book/" data-book="header"><span class="lg">Book a session</span><span class="sh">Book</span></a>
+<button type="button" class="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</div></header>
+<main id="main">
+<section class="hero3" id="top"><span class="h3-glow g1" aria-hidden="true"></span><span class="h3-glow g2" aria-hidden="true"></span><span class="h3-glow g3" aria-hidden="true"></span>
+<div class="wrap hero3-in">
+<div class="h3-copy">
+<h1>You don&rsquo;t have to carry <span class="rw" aria-hidden="true"><b class="on">overthinking</b><b>stress</b><b>worry</b><b>low mood</b><b>burnout</b><b>anxiety</b></span><span class="sr">what weighs on you</span> alone.</h1>
+<p class="lead">Mentra connects you with licensed psychologists for private online sessions in Malayalam and English. Simple to start, easy to keep going.</p>
+<div class="cta-row"><a class="btn primary" href="book/" data-book="hero">Book a session <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a class="btn ghost" href="#how">See how it works</a></div>
+<ul class="h3-trust"><li><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-2.5 5 2.5-1.5-7"/></svg>Licensed psychologists</li><li><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Private &amp; confidential</li><li><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="M16 10l5-3v10l-5-3"/></svg>Online from anywhere</li></ul>
+<button type="button" class="hero-pause" aria-pressed="false" aria-label="Pause moving words and animations"><span class="pi"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg></span><span class="pl"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg></span><span class="pt">Pause motion</span></button>
+</div>
+<div class="il" aria-hidden="true"><svg class="il-svg" viewBox="12 40 620 430" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+<defs>
+<linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1F5"/><stop offset=".55" stop-color="#F65A84" stop-opacity=".28"/><stop offset="1" stop-color="#FFF1F5"/></linearGradient>
+<radialGradient id="sunH" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset=".45" stop-color="#F65A84" stop-opacity=".35"/><stop offset="1" stop-color="#F65A84" stop-opacity="0"/></radialGradient>
+<radialGradient id="lampG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/><stop offset=".4" stop-color="#F65A84" stop-opacity=".25"/><stop offset="1" stop-color="#F65A84" stop-opacity="0"/></radialGradient>
+<radialGradient id="beamG" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+<clipPath id="winClip"><path d="M170 300V138A90 90 0 0 1 350 138V300Z"/></clipPath>
+<path id="heart" d="M12 21C5 15 1 11.5 1 7.2 1 4 3.4 2 6.2 2c2.3 0 4.1 1.2 5.8 3.3C13.7 3.2 15.5 2 17.8 2 20.6 2 23 4 23 7.2 23 11.5 19 15 12 21z"/>
+<g id="face"><path d="M133 216q6 5 12 0M151 216q6 5 12 0" fill="none" stroke="#29273A" stroke-width="3" stroke-linecap="round"/><path d="M139 229q10 8 20 0" fill="none" stroke="#29273A" stroke-width="3" stroke-linecap="round"/><circle cx="130" cy="226" r="5.5" fill="#F65A84" fill-opacity=".38"/><circle cx="167" cy="226" r="5.5" fill="#F65A84" fill-opacity=".38"/></g>
+</defs>
+<!-- wall and floor -->
+<rect width="640" height="392" fill="#F3F1FF"/>
+<path d="M30 392V210A110 110 0 0 1 250 210V392Z" fill="#FFFFFF" fill-opacity=".45"/>
+<rect y="392" width="640" height="128" fill="#5749E2" fill-opacity=".08"/><rect y="388" width="640" height="6" fill="#FFFFFF" fill-opacity=".85"/>
+<!-- window with a sunrise -->
+<path d="M170 300V138A90 90 0 0 1 350 138V300Z" fill="url(#skyG)"/>
+<g clip-path="url(#winClip)">
+<circle class="sun" cx="260" cy="228" r="78" fill="url(#sunH)"/><circle cx="260" cy="236" r="26" fill="#FFFFFF" fill-opacity=".95"/>
+<path d="M150 292C190 262 226 270 262 280C296 288 326 266 370 276V310H150Z" fill="#5749E2" fill-opacity=".2"/>
+<path d="M150 304C196 280 236 290 278 298C312 304 338 288 370 294V310H150Z" fill="#2CE8B6" fill-opacity=".32"/>
+<path class="bird" d="M206 176q6-8 12 0q6-8 12 0M300 206q5-6 10 0q5-6 10 0" fill="none" stroke="#29273A" stroke-opacity=".5" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<path d="M170 300V138A90 90 0 0 1 350 138V300Z" fill="none" stroke="#FFFFFF" stroke-width="10"/><path d="M260 48V300M170 196H350" stroke="#FFFFFF" stroke-width="5"/>
+<rect x="156" y="298" width="208" height="14" rx="5" fill="#FFFFFF"/>
+<path d="M170 312L120 392H400L350 312Z" fill="url(#beamG)" opacity=".7"/>
+<!-- picture on the wall -->
+<rect x="440" y="64" width="108" height="100" rx="10" fill="#FFFFFF"/><rect x="448" y="72" width="92" height="84" rx="6" fill="#F3F1FF"/>
+<path d="M462 156V120A16 16 0 0 1 494 120V156Z" fill="#5749E2" fill-opacity=".4"/><path d="M490 156V108A18 18 0 0 1 526 108V156Z" fill="#F65A84" fill-opacity=".5"/><circle cx="510" cy="92" r="9" fill="#2CE8B6"/>
+<!-- rug, shadows -->
+<ellipse cx="320" cy="452" rx="272" ry="38" fill="#F65A84" fill-opacity=".14"/><ellipse cx="320" cy="452" rx="214" ry="27" fill="#FFFFFF" fill-opacity=".55" stroke="#F65A84" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 6"/>
+<ellipse cx="150" cy="410" rx="112" ry="9" fill="#29273A" fill-opacity=".1"/><ellipse cx="490" cy="410" rx="112" ry="9" fill="#29273A" fill-opacity=".1"/>
+<!-- plant on the left -->
+<g class="plant" transform="translate(34,352)"><g class="sway"><ellipse cx="0" cy="-34" rx="9" ry="34" transform="rotate(-30)" fill="#2CE8B6"/><ellipse cx="0" cy="-38" rx="9" ry="38" transform="rotate(-6)" fill="#2CE8B6" fill-opacity=".85"/><ellipse cx="0" cy="-34" rx="9" ry="34" transform="rotate(20)" fill="#2CE8B6"/><ellipse cx="0" cy="-26" rx="7" ry="26" transform="rotate(46)" fill="#5749E2" fill-opacity=".55"/><ellipse cx="0" cy="-26" rx="7" ry="26" transform="rotate(-52)" fill="#5749E2" fill-opacity=".55"/></g></g>
+<path d="M15 350h38l-5 42H20z" fill="#5749E2"/><path d="M15 350h38l-1 8H16z" fill="#29273A" fill-opacity=".18"/>
+<!-- floor lamp -->
+<circle class="lamp" cx="606" cy="160" r="118" fill="url(#lampG)"/>
+<rect x="603.5" y="160" width="5" height="232" fill="#29273A" fill-opacity=".85"/><ellipse cx="606" cy="392" rx="22" ry="6" fill="#29273A" fill-opacity=".85"/>
+<path d="M582 118h48l-10 44h-28z" fill="#F65A84"/><path d="M582 118h48l-2 8h-44z" fill="#FFFFFF" fill-opacity=".35"/>
+<!-- left chair -->
+<rect x="64" y="206" width="150" height="196" rx="46" fill="#5749E2"/><rect x="64" y="206" width="150" height="196" rx="46" fill="#29273A" fill-opacity=".1"/>
+<rect x="56" y="296" width="38" height="104" rx="19" fill="#5749E2"/><rect x="56" y="296" width="38" height="104" rx="19" fill="#29273A" fill-opacity=".16"/>
+<rect x="74" y="394" width="10" height="20" rx="3" fill="#29273A"/><rect x="214" y="394" width="10" height="20" rx="3" fill="#29273A"/>
+<!-- the person who came to talk (left) -->
+<g class="person" id="p1">
+<path d="M146 342H232L236 384" fill="none" stroke="#29273A" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="250" cy="390" rx="21" ry="8.5" fill="#29273A"/>
+<rect x="135" y="236" width="16" height="18" rx="6" fill="#FFFFFF" stroke="#29273A" stroke-width="3"/>
+<path d="M106 294C106 264 120 252 142 252C166 252 178 264 178 294L184 350H102Z" fill="#F65A84"/>
+<path d="M158 270Q186 306 218 328" fill="none" stroke="#F65A84" stroke-width="22" stroke-linecap="round"/><circle cx="222" cy="332" r="10.5" fill="#FFFFFF" stroke="#29273A" stroke-width="3"/>
+<circle cx="143" cy="214" r="29" fill="#FFFFFF" stroke="#29273A" stroke-width="3.5"/>
+<path d="M113 214C110 186 133 176 154 180C174 184 180 202 174 220C168 204 148 198 130 204C122 208 116 212 113 214Z" fill="#29273A"/><circle cx="117" cy="198" r="11" fill="#29273A"/>
+<use href="#face"/>
+</g>
+<!-- right chair -->
+<rect x="426" y="206" width="150" height="196" rx="46" fill="#2CE8B6"/><rect x="426" y="206" width="150" height="196" rx="46" fill="#29273A" fill-opacity=".08"/>
+<rect x="546" y="296" width="38" height="104" rx="19" fill="#2CE8B6"/><rect x="546" y="296" width="38" height="104" rx="19" fill="#29273A" fill-opacity=".14"/>
+<rect x="416" y="394" width="10" height="20" rx="3" fill="#29273A"/><rect x="556" y="394" width="10" height="20" rx="3" fill="#29273A"/>
+<!-- the psychologist (right, drawn mirrored) -->
+<g transform="translate(640,0) scale(-1,1)"><g class="person" id="p2">
+<path d="M146 342H232L236 384" fill="none" stroke="#29273A" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="250" cy="390" rx="21" ry="8.5" fill="#29273A"/>
+<rect x="135" y="236" width="16" height="18" rx="6" fill="#FFFFFF" stroke="#29273A" stroke-width="3"/>
+<path d="M106 294C106 264 120 252 142 252C166 252 178 264 178 294L184 350H102Z" fill="#5749E2"/><path d="M130 254L142 284L154 254Z" fill="#FFFFFF"/>
+<path d="M158 270Q186 306 218 328" fill="none" stroke="#5749E2" stroke-width="22" stroke-linecap="round"/>
+<g transform="rotate(-14 206 322)"><rect x="176" y="302" width="60" height="44" rx="5" fill="#FFFFFF" stroke="#29273A" stroke-width="3"/><path d="M186 316H224M186 326H218M186 336H210" stroke="#5749E2" stroke-opacity=".45" stroke-width="2.5" stroke-linecap="round"/></g>
+<circle cx="222" cy="332" r="10.5" fill="#FFFFFF" stroke="#29273A" stroke-width="3"/>
+<circle cx="143" cy="214" r="29" fill="#FFFFFF" stroke="#29273A" stroke-width="3.5"/>
+<path d="M113 216C108 184 136 172 156 178C176 184 182 206 176 226C172 210 160 200 142 198C128 198 118 204 113 216Z" fill="#29273A"/>
+<use href="#face"/><circle cx="139" cy="215" r="8" fill="#FFFFFF" fill-opacity=".35" stroke="#29273A" stroke-width="2.2"/><circle cx="157" cy="215" r="8" fill="#FFFFFF" fill-opacity=".35" stroke="#29273A" stroke-width="2.2"/><path d="M147 214.5H149" stroke="#29273A" stroke-width="2.2" stroke-linecap="round"/>
+</g></g>
+<!-- table, cups, steam -->
+<ellipse cx="320" cy="392" rx="30" ry="7" fill="#29273A" fill-opacity=".85"/><rect x="316" y="352" width="8" height="40" fill="#29273A" fill-opacity=".85"/>
+<ellipse cx="320" cy="352" rx="54" ry="10" fill="#FFFFFF" stroke="#29273A" stroke-opacity=".25" stroke-width="2"/>
+<rect x="288" y="333" width="22" height="17" rx="6" fill="#FFFFFF" stroke="#5749E2" stroke-width="2.6"/><path d="M310 338q7 0 7 6t-7 6" fill="none" stroke="#5749E2" stroke-width="2.6"/>
+<rect x="332" y="333" width="22" height="17" rx="6" fill="#FFFFFF" stroke="#F65A84" stroke-width="2.6"/><path d="M354 338q7 0 7 6t-7 6" fill="none" stroke="#F65A84" stroke-width="2.6"/>
+<g class="steam" fill="none" stroke="#5749E2" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"><path d="M299 326q-6-9 0-18t0-18"/><path d="M343 326q6-9 0-18t0-18" style="animation-delay:-1.4s"/></g>
+<!-- little hearts and sparkles -->
+<g class="hrt" style="--d:0s"><use href="#heart" x="196" y="140" width="22" height="20" fill="#F65A84"/></g>
+<g class="hrt" style="--d:-2.2s"><use href="#heart" x="440" y="196" width="18" height="16" fill="#F65A84" fill-opacity=".8"/></g>
+<g class="hrt" style="--d:-3.6s"><use href="#heart" x="376" y="132" width="14" height="13" fill="#5749E2" fill-opacity=".75"/></g>
+<path class="spk" d="M392 84l3 9 9 3-9 3-3 9-3-9-9-3 9-3z" fill="#2CE8B6"/><path class="spk" style="animation-delay:-1.6s" d="M126 120l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#F65A84"/>
+</svg>
+
+<p class="bb bb1">I&rsquo;ve been feeling so overwhelmed lately&hellip;</p><p class="bb bb2">Take your time. I&rsquo;m here to listen.</p></div></div></section>
+<section class="sec" id="checkin-sec"><div class="wrap"><div class="sec-h"><span class="eyebrow">A gentle check-in</span><h2>How are you feeling today?</h2><p>Take a quiet moment. Tap how you feel and we will answer. Nothing you choose is saved or sent.</p></div>
+<div class="checkin" id="checkin" role="region" aria-label="A gentle check-in"><span class="ck-glow" aria-hidden="true"></span><div class="ck-card">
+<div class="ck-head"><span class="ck-av"><img src="assets/icon-256.png" alt="" width="30" height="30"></span><div><strong>Mentra</strong><small><i></i>Here to listen</small></div></div>
+<div class="ck-log" role="log" aria-live="polite" aria-relevant="additions"><div class="msg them">Hi, I am glad you are here. How are you feeling today?</div></div>
+<div class="ck-bottom"><div class="ck-chips" role="group" aria-label="How are you feeling today"><button type="button" class="ck-chip" data-feel="overwhelmed"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8c2 0 2-2 4.5-2S10 8 12 8s2-2 4.5-2S19 8 21 8M3 13c2 0 2-2 4.5-2S10 13 12 13s2-2 4.5-2S19 13 21 13M3 18c2 0 2-2 4.5-2S10 18 12 18s2-2 4.5-2S19 18 21 18"/></svg>Overwhelmed</button><button type="button" class="ck-chip" data-feel="low"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 16a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 9.5 3.3 3.3 0 0 1 18 16z"/><path d="M9 19v2M13 19v2M17 19v2"/></svg>Low</button><button type="button" class="ck-chip" data-feel="worried"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a2 2 0 1 1 2 2 4 4 0 1 1-4-4 6 6 0 1 1 6 6"/></svg>Worried</button><button type="button" class="ck-chip" data-feel="restless"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l2.5-6 4 12 3-9 1.5 3H22"/></svg>Restless</button><button type="button" class="ck-chip" data-feel="okay"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"/><path d="M12 13c0-4-3-6-7-6 0 4 3 6.5 7 6z"/><path d="M12 11c0-3.5 2.5-6 7-6 0 4-2.5 6.5-7 6z"/></svg>Okay</button></div>
+<div class="ck-act" hidden><a class="btn primary sm" href="book/" data-book="hero-checkin">Find my psychologist</a><button type="button" class="ck-again">Start over</button></div></div>
+<p class="ck-foot">Nothing you choose here is saved or sent.</p>
+</div></div></div></section>
+<section class="sec" id="help"><div class="wrap"><div class="sec-h"><span class="eyebrow">What we help with</span><h2>Support for the things that weigh on you</h2><p>Whatever you are carrying, you do not have to work it out alone.</p></div>
+<div class="cards"><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8c2 0 2-2 4.5-2S10 8 12 8s2-2 4.5-2S19 8 21 8M3 13c2 0 2-2 4.5-2S10 13 12 13s2-2 4.5-2S19 13 21 13M3 18c2 0 2-2 4.5-2S10 18 12 18s2-2 4.5-2S19 18 21 18"/></svg></div><h3>Anxiety & stress</h3><p>Worry, pressure, panic, or feeling constantly on edge.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 16a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 9.5 3.3 3.3 0 0 1 18 16z"/><path d="M9 19v2M13 19v2M17 19v2"/></svg></div><h3>Low mood</h3><p>Persistent sadness, low energy, or loss of interest in things.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/></svg></div><h3>Relationships</h3><p>Communication, conflict, closeness and trust with a partner.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="2.5"/><circle cx="5.5" cy="9.5" r="2"/><circle cx="18.5" cy="9.5" r="2"/><path d="M7.5 20v-3a4.5 4.5 0 0 1 9 0v3M2.5 18v-1.5a3.5 3.5 0 0 1 3.2-3.4M21.5 18v-1.5a3.5 3.5 0 0 0-3.2-3.4"/></svg></div><h3>Family</h3><p>Family tension, big changes and difficult conversations at home.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2M9 9.5h.01M15 9.5h.01"/></svg></div><h3>Child & teen</h3><p>Emotional, behavioural and developmental concerns.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 17l.7 1.8L21.5 19.5l-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div><h3>Self-esteem</h3><p>Confidence, self-worth and being kinder to yourself.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></div><h3>Work & studies</h3><p>Burnout, exams, career decisions and performance pressure.</p></div><div class="card"><div class="ci"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></div><h3>Life changes & loss</h3><p>Grief, major change, and adjusting after hard experiences.</p></div></div><div class="more"><a class="btn ghost" href="services/">See all areas we support</a></div></div></section>
+<section class="sec alt" id="how"><div class="wrap"><div class="sec-h"><span class="eyebrow">How it works</span><h2>Getting started takes a few minutes</h2></div>
+<div class="steps"><div class="step"><h3>Tell us what you need</h3><p>Answer a few gentle questions about what is on your mind, your language and when you are free.</p></div><div class="step"><h3>Meet your match</h3><p>We show you psychologists who fit. Read their profiles and choose the one who feels right.</p></div><div class="step"><h3>Start online</h3><p>Pick a time, pay securely, and join your private session by video or voice from anywhere.</p></div></div>
+<div class="more"><a class="btn primary" href="book/" data-book="how">Find my psychologist</a></div></div></section>
+<section class="sec" id="why"><div class="wrap"><div class="sec-h"><span class="eyebrow">Why Mentra</span><h2>Care you can trust, made simple</h2></div>
+<div class="why"><div><div class="ci"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-2.5 5 2.5-1.5-7"/></svg></div><h3>Licensed professionals</h3><p>Every psychologist at Mentra is a qualified, licensed professional.</p></div><div><div class="ci"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div><h3>Private by design</h3><p>Your details are used only to arrange your sessions.</p></div><div><div class="ci"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><h3>In your language</h3><p>Choose a psychologist who speaks Malayalam, English or Hindi, where available.</p></div><div><div class="ci"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div><h3>Easy to book</h3><p>Choose a time that suits you, pay securely online, and join from your phone or computer.</p></div></div></div></section>
+<section class="sec mint"><div class="wrap split"><div><span class="eyebrow">Your first session</span><h2>What to expect</h2><p class="muted" style="margin-top:14px">Starting therapy can feel like a big step. Here is what it looks like.</p>
+<ul class="checks"><li><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg><span>You meet your psychologist on a private video or voice call.</span></li><li><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg><span>You share only what you are comfortable sharing, at your own pace.</span></li><li><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg><span>You leave with a clearer picture of what is going on and what could help.</span></li></ul></div>
+<div class="panel"><h3>Online. Private. At a time that suits you.</h3><p class="muted" style="margin-top:10px">No travel and no waiting rooms. Sessions are usually 45 to 50 minutes.</p><div style="margin-top:22px"><a class="btn primary" href="book/" data-book="first-session">Book a session</a></div></div></div></section>
+<section class="sec"><div class="wrap"><div class="sec-h"><span class="eyebrow">Our psychologists</span><h2>Meet the people who will listen</h2><p>Licensed professionals, matched to your needs.</p></div><div id="team-preview"></div><div class="more"><a class="btn ghost" href="psychologists/">See all psychologists</a></div></div></section>
+<section class="sec alt" id="faq"><div class="wrap"><div class="sec-h"><span class="eyebrow">Questions</span><h2>Things people often ask</h2></div><div class="faq"><details><summary>Is what I share confidential?</summary><p>Yes. What you share with your psychologist is confidential, within the limits of the law and professional ethics (for example, where someone's safety is at serious risk). Read our <a href="privacy.html">Privacy Policy</a> for details.</p></details><details><summary>How do online sessions work?</summary><p>Choose a time on our booking page and pay securely online. We then send your private session link on WhatsApp. At your time, join by video or voice from your phone or computer.</p></details><details><summary>How long is a session, and what does it cost?</summary><p>Sessions are usually 45 to 50 minutes. Each psychologist's fee is shown on their profile, so you know it before you book.</p></details><details><summary>Can I choose my psychologist and language?</summary><p>Yes. You can tell us your concern, language and preferences, and we show psychologists who match. You choose who to book with.</p></details><details><summary>Can I change or cancel a booking?</summary><p>Yes. Our <a href="refund-policy.html">Refund &amp; Cancellation Policy</a> explains when you can reschedule or get a refund.</p></details><details><summary>Is Mentra an emergency service?</summary><p>No. If you or someone else is in danger, call 112.</p></details></div></div></section>
+<section class="sec"><div class="wrap"><div class="band"><h2>Ready when you are.</h2><p>Take the first step. It only takes a few minutes to find a psychologist who fits.</p><a class="btn light" href="book/" data-book="band">Book a session</a></div></div></section>
+</main>
+<footer class="ftr"><div class="ftr-wrap">
+<div class="fgrid">
+<div class="brand"><img src="assets/mentra-logo.png" alt="Mentra" width="144" height="36"><p>Professional counselling and therapy, online. Private, personal and easy to book.</p></div>
+<div><h4>Explore</h4><ul><li><a href="./">Home</a></li><li><a href="about/">About</a></li><li><a href="services/">Services</a></li><li><a href="psychologists/">Psychologists</a></li><li><a href="#faq">FAQ</a></li></ul></div>
+<div><h4>Legal</h4><ul><li><a href="privacy.html">Privacy Policy</a></li><li><a href="terms.html">Terms of Service</a></li><li><a href="refund-policy.html">Refund &amp; Cancellation</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+<div><h4>Contact</h4><ul>
+<li data-contact="address"><span data-val></span></li>
+<li data-contact="email"><a href="#"></a></li><li data-contact="phone"><a href="#"></a></li><li data-contact="whatsapp"><a href="#"></a></li>
+<li><a href="contact.html">Send us a message</a></li></ul></div>
+</div>
+<div class="base"><span>&copy; <span data-year>2026</span> Mentra&trade;. All rights reserved.</span><span>Online sessions with licensed psychologists.</span></div>
+</div></footer>
+<script src="config.js?v=3"></script>
+<script src="mentra-api.js"></script>
+<script src="psychologists.js?v=2"></script>
+<script src="site.js?v=6"></script>
+</body>
 </html>

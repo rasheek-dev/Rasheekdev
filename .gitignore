@@ -37,3 +37,7 @@ lerna-debug.log*
 # Temp files
 *.tmp
 *.log
+
+# Build output and emulator logs
+mindledger-upload.zip
+*-debug.log
