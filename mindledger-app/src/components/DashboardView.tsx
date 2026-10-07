@@ -10,18 +10,22 @@ import {
   AlertTriangle,
   ChevronRight,
   ShieldAlert,
+  Globe,
+  Video,
 } from 'lucide-react';
-import { Assessment, Client, SessionNote, User, Clinic, isOwner, isPsychologist, isCoordinator } from '../types';
+import { Assessment, Client, SessionNote, User, Clinic, WebSession, isOwner, isPsychologist, isCoordinator } from '../types';
+import { formatSessionDate } from './SessionNoteEditor';
 
 interface DashboardViewProps {
   clients: Client[];
   notes: SessionNote[];
   assessments: Assessment[];
+  sessions: WebSession[];
   currentUser: User;
   allUsers: User[];
   clinic: Clinic;
   onSelectClient: (clientId: string) => void;
-  onOpenNote: (noteId?: string, clientId?: string) => void;
+  onOpenNote: (noteId?: string, clientId?: string, sessionId?: string) => void;
   onNewClient: () => void;
   onSendAssessment: () => void;
   onGoToAssessments: () => void;
@@ -42,6 +46,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   clients,
   notes,
   assessments,
+  sessions,
   currentUser,
   allUsers,
   clinic,
@@ -82,6 +87,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     return visibleClients.filter((c) => new Date(c.created_at).getTime() >= weekAgo).length;
   }, [visibleClients]);
+
+  const todayKey = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, []);
+  const upcomingSessions = byClinician(sessions)
+    .filter((s) => s.status !== 'cancelled' && s.date >= todayKey)
+    .sort((a, b) => `${a.date} ${a.start_time}`.localeCompare(`${b.date} ${b.start_time}`))
+    .slice(0, 8);
 
   const listedNotes = (notesView === 'drafts' ? draftNotes : visibleNotes).slice(0, 8);
   const clientName = (id: string) => clients.find((c) => c.id === id)?.name || 'Client';
@@ -182,6 +196,87 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           />
         )}
       </div>
+
+      {sessions.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-600" />
+                Upcoming Website Sessions
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Booked on your website. Returning clients open their existing file with all earlier reports.
+              </p>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">{upcomingSessions.length}</span>
+          </div>
+          {upcomingSessions.length === 0 && <p className="text-xs text-slate-400 py-2">No upcoming sessions.</p>}
+          <div className="grid md:grid-cols-2 gap-2.5">
+            {upcomingSessions.map((sess) => {
+              const sessNote = notes.find((n) => n.appointment_id === sess.id);
+              const psych = allUsers.find((u) => u.id === sess.clinician_id);
+              const pastReports = notes.filter((n) => n.client_id === sess.client_id && n.appointment_id !== sess.id).length;
+              const isFollowUp = sessions.some(
+                (o) => o.client_id === sess.client_id && o.status !== 'cancelled' && `${o.date} ${o.start_time}` < `${sess.date} ${sess.start_time}`
+              );
+              const isToday = sess.date === todayKey;
+              return (
+                <div key={sess.id} className="p-3.5 rounded-xl border border-slate-200 border-l-4 border-l-blue-400 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isToday ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                        {isToday ? 'Today' : formatSessionDate(sess.date)}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">{sess.start_time}</span>
+                    </div>
+                    <button
+                      onClick={() => onSelectClient(sess.client_id)}
+                      className="text-sm font-bold text-slate-900 hover:text-[#5749e2] text-left truncate block max-w-full"
+                    >
+                      {clientName(sess.client_id)}
+                    </button>
+                    <div className="text-[11px] text-slate-500 truncate">
+                      {psych?.name || 'Psychologist'}
+                      {isFollowUp ? ' \u2022 Follow-up' : ' \u2022 First session'}
+                      {!userIsCoordinator && pastReports > 0 && ` \u2022 ${pastReports} earlier report${pastReports === 1 ? '' : 's'}`}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    {sess.meet_url && (
+                      <a
+                        href={sess.meet_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 inline-flex items-center gap-1"
+                      >
+                        <Video className="w-3 h-3" />
+                        Meet
+                      </a>
+                    )}
+                    {userIsCoordinator ? (
+                      <button
+                        onClick={() => onSelectClient(sess.client_id)}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700"
+                      >
+                        Client File
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onOpenNote(sessNote?.id, sess.client_id, sess.id)}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[#5749e2] text-white inline-flex items-center gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        {sessNote ? 'Open Report' : 'Write Report'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">

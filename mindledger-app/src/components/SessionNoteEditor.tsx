@@ -9,16 +9,22 @@ import {
   AlertTriangle,
   Save,
 } from 'lucide-react';
-import { SessionNote, Client, User, isPsychologist, isCoordinator } from '../types';
+import { SessionNote, Client, User, WebSession, isPsychologist, isCoordinator } from '../types';
 import { SessionDurationTimer } from './SessionDurationTimer';
 import { saveNote, signNote, addAddendum } from '../lib/api';
 
 interface SessionNoteEditorProps {
   note?: SessionNote;
+  session?: WebSession;
   client: Client;
   currentUser: User;
   onBack: () => void;
   onSave: (note: SessionNote) => void;
+}
+
+export function formatSessionDate(date: string) {
+  const d = new Date(`${date}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? date : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export const SessionNoteEditor: React.FC<SessionNoteEditorProps> = (props) => {
@@ -71,7 +77,7 @@ export const SessionNoteEditor: React.FC<SessionNoteEditorProps> = (props) => {
   return <NoteEditorBody {...props} />;
 };
 
-const NoteEditorBody: React.FC<SessionNoteEditorProps> = ({ note, client, currentUser, onBack, onSave }) => {
+const NoteEditorBody: React.FC<SessionNoteEditorProps> = ({ note, session, client, currentUser, onBack, onSave }) => {
   const [currentNote, setCurrentNote] = useState<SessionNote | undefined>(note);
 
   // Sync state if incoming note prop changes
@@ -165,6 +171,7 @@ const NoteEditorBody: React.FC<SessionNoteEditorProps> = ({ note, client, curren
       content = { text: freeText };
     }
     return {
+      appointment_id: currentNote?.appointment_id || session?.id,
       template_type: templateType,
       content,
       private_notes: privateNotes,
@@ -319,6 +326,12 @@ const NoteEditorBody: React.FC<SessionNoteEditorProps> = ({ note, client, curren
             <p className="text-xs text-slate-400 mt-0.5">
               Clinician: {currentNote?.clinician_name || currentUser.name}
               {currentNote?.status === 'draft' && ' \u2022 Draft (not yet signed)'}
+              {session && (
+                <>
+                  {' \u2022 '}Website session {formatSessionDate(session.date)}, {session.start_time}&ndash;{session.end_time}
+                  {session.booking_code ? ` (${session.booking_code})` : ''}
+                </>
+              )}
             </p>
           </div>
 

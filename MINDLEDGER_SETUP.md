@@ -36,6 +36,17 @@ PHP 8.0 or newer is required (hPanel → **Advanced → PHP Configuration**). Ho
    If you see **Database not connected** instead, the message shows the exact problem. Fix the details in `mindledger/api/config.php` (step 1) and click **Try again**.
 3. **Clinic Settings → Add Staff Member** for each psychologist and front-desk coordinator. Give each person their email and initial password.
 
+## Connection to the Mentra website
+
+When the Mentra website's `psychologists` and `bookings` tables are in the same database, MindLedger syncs with it every time someone opens it:
+
+- **Psychologists** listed on the website get a MindLedger psychologist account automatically, marked **From website** in Clinic Settings. They show **Login not set up** until you click **Set Password**. Their login is the email from the website. A psychologist with no email on the website gets an address ending in `@psychologist.mentracare.in`, shown in Settings. Name, phone, photo and registration number follow the website.
+- **Bookings** that are paid or confirmed become client files, assigned to the psychologist who was booked. Unpaid or abandoned bookings are ignored until they are paid. Website clients start with DPDP consent **pending**; record consent at the first session.
+- **Follow-ups**: a client who books again is matched by phone number (or email) to their existing file, so all earlier reports stay together. If the follow-up is with a different psychologist, the file moves to that psychologist, who then sees the earlier reports. The previous psychologist keeps access only to the reports they wrote.
+- **Sessions** appear under **Upcoming Website Sessions** on the dashboard and in the client's file, with the Google Meet link and a **Write Report** button that links the report to that session. Cancelled bookings show as cancelled.
+
+The Mentra website must use the same database. Its `public_html/config/Database.php` and `public_html/config/Config.php` need `u180950667_mentra` as both the database name and the user, plus the database password.
+
 ## Everyday use
 
 - **Clients**: the owner or a coordinator creates the client file and assigns a psychologist.

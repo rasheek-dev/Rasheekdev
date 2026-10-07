@@ -17,8 +17,11 @@ import {
   Lock,
   Printer,
   Copy,
+  Globe,
+  Video,
 } from 'lucide-react';
-import { Client, SessionNote, Assessment, ConsentRecord, User, Clinic, isOwner, isPsychologist, isCoordinator } from '../types';
+import { Client, SessionNote, Assessment, ConsentRecord, User, Clinic, WebSession, isOwner, isPsychologist, isCoordinator } from '../types';
+import { formatSessionDate } from './SessionNoteEditor';
 import { ASSESSMENT_DEFINITIONS } from '../data/clinicalData';
 import { withdrawConsent, eraseClient, buildClientExport, assessmentLink } from '../lib/api';
 import { printClientReport } from './clientReport';
@@ -27,12 +30,13 @@ interface ClientDetailViewProps {
   client: Client;
   notes: SessionNote[];
   assessments: Assessment[];
+  sessions: WebSession[];
   consentRecords: ConsentRecord[];
   allUsers: User[];
   clinic: Clinic;
   currentUser: User;
   onBack: () => void;
-  onOpenNote: (noteId?: string, clientId?: string) => void;
+  onOpenNote: (noteId?: string, clientId?: string, sessionId?: string) => void;
   onSendAssessment: (clientId: string) => void;
   onRefreshData: () => void;
 }
@@ -41,6 +45,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
   notes,
   assessments,
+  sessions,
   consentRecords,
   allUsers,
   clinic,
@@ -81,6 +86,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   const userIsOwner = isOwner(currentUser.role);
   const userIsPsychologist = isPsychologist(currentUser.role);
   const sortedNotes = [...notes].sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  const sortedSessions = [...sessions].sort((a, b) => `${b.date} ${b.start_time}`.localeCompare(`${a.date} ${a.start_time}`));
   const sortedAssessments = [...assessments].sort((a, b) => (b.sent_at || '').localeCompare(a.sent_at || ''));
   const latestCompleted = sortedAssessments.find((a) => a.status === 'completed');
   const impressionNote = sortedNotes.find((n) => n.content?.assessment?.trim() || n.content?.text?.trim());
@@ -203,6 +209,12 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                     Minor (Under 18)
                   </span>
                 )}
+                {client.source === 'website' && (
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold inline-flex items-center gap-1">
+                    <Globe className="w-3 h-3" />
+                    Booked via website
+                  </span>
+                )}
                 {client.anonymized && (
                   <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold">
                     Anonymized (DPDP Erased)
@@ -211,7 +223,13 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               </div>
 
               <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-slate-500">
-                <span>DOB: {client.date_of_birth}</span>
+                <span>
+                  {client.date_of_birth
+                    ? `DOB: ${client.date_of_birth}`
+                    : client.age_at_intake
+                    ? `Age ${client.age_at_intake} at first booking`
+                    : 'DOB: not recorded'}
+                </span>
                 <span>&bull;</span>
                 <span>Phone: {client.phone}</span>
                 <span>&bull;</span>
@@ -273,8 +291,80 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
       {activeTab === 'overview' && (
         <div className="grid md:grid-cols-12 gap-6">
           <div className="md:col-span-8 space-y-4">
+            {sortedSessions.length > 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-600" />
+                    Website Sessions ({sortedSessions.length})
+                  </h3>
+                  <span className="text-[10px] text-slate-400">Booked on your website</span>
+                </div>
+                <div className="space-y-2">
+                  {sortedSessions.map((sess) => {
+                    const sessNote = notes.find((n) => n.appointment_id === sess.id);
+                    const psych = allUsers.find((u) => u.id === sess.clinician_id);
+                    const cancelled = sess.status === 'cancelled';
+                    return (
+                      <div
+                        key={sess.id}
+                        className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+                          cancelled ? 'border-slate-200 bg-slate-50 opacity-70' : 'border-slate-200'
+                        }`}
+                      >
+                        <div className="text-xs">
+                          <div className="font-bold text-slate-900">
+                            {formatSessionDate(sess.date)}, {sess.start_time}&ndash;{sess.end_time}
+                            {cancelled && <span className="ml-2 text-red-600 font-semibold">Cancelled</span>}
+                          </div>
+                          <div className="text-[11px] text-slate-500">
+                            {psych?.name || 'Psychologist'} &bull; {sess.booking_code}
+                            {sess.concerns && !userIsCoordinator ? ` \u2022 ${sess.concerns}` : ''}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {sess.meet_url && !cancelled && (
+                            <a
+                              href={sess.meet_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 inline-flex items-center gap-1"
+                            >
+                              <Video className="w-3 h-3" />
+                              Meet
+                            </a>
+                          )}
+                          {!userIsCoordinator && !cancelled && (
+                            <button
+                              onClick={() => onOpenNote(sessNote?.id, client.id, sess.id)}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 ${
+                                sessNote
+                                  ? sessNote.status === 'signed'
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : 'bg-amber-50 text-amber-700'
+                                  : 'bg-[#5749e2] text-white'
+                              }`}
+                            >
+                              <FileText className="w-3 h-3" />
+                              {sessNote ? (sessNote.status === 'signed' ? 'View Report' : 'Continue Report') : 'Write Report'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
               <h3 className="text-sm font-bold text-slate-900">Clinical Case Summary</h3>
+              {client.intake_concerns && (
+                <div className="text-xs text-slate-600">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Concerns shared when booking</span>
+                  <p className="whitespace-pre-line">{client.intake_concerns}</p>
+                </div>
+              )}
               {userIsCoordinator ? (
                 <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-center gap-2">
                   <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />

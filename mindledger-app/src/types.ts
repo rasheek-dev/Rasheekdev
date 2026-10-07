@@ -18,6 +18,9 @@ export interface User {
   specialties?: string[];
   avatar_url?: string;
   color?: string;
+  from_website?: boolean;
+  needs_password?: boolean;
+  placeholder_email?: boolean;
 }
 
 export interface Clinic {
@@ -57,6 +60,26 @@ export interface Client {
   status: 'active' | 'inactive';
   created_at: string;
   anonymized?: boolean;
+  source?: 'website';
+  intake_concerns?: string;
+  age_at_intake?: number | null;
+  last_booking_at?: string;
+}
+
+export interface WebSession {
+  id: string;
+  client_id: string;
+  assigned_clinician_id: string;
+  clinician_id: string;
+  booking_code: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  payment_status: string;
+  concerns: string;
+  meet_url: string;
+  source: 'website';
 }
 
 export type NoteTemplateType = 'SOAP' | 'DAP' | 'free_text' | 'Free Text';

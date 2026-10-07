@@ -9,6 +9,7 @@ import {
   SessionNote,
   User,
   UserRole,
+  WebSession,
 } from '../types';
 import { ASSESSMENT_DEFINITIONS } from '../data/clinicalData';
 
@@ -151,6 +152,8 @@ export interface ClinicData {
   assessments: Assessment[];
   consentRecords: ConsentRecord[];
   dpdpRequests: DPDPRequest[];
+  sessions: WebSession[];
+  websiteLinked: boolean;
 }
 
 export async function loadClinicData(): Promise<ClinicData> {

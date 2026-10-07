@@ -155,6 +155,10 @@ function migrate(): void
         attempted_at DATETIME NOT NULL,
         INDEX idx_ip_time (ip, attempted_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $hasExternal = $pdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ml_users' AND COLUMN_NAME = 'external_id'")->fetchColumn() > 0;
+    if (!$hasExternal) {
+        $pdo->exec('ALTER TABLE ml_users ADD COLUMN external_id VARCHAR(40) NULL, ADD UNIQUE INDEX idx_external (external_id)');
+    }
 }
 
 // ------------------------------------------------------------------ Helpers
@@ -273,8 +277,11 @@ function saveRecord(string $kind, array $data, bool $insert): void
             json_encode($data, JSON_UNESCAPED_UNICODE), $now, $now,
         ]);
     } else {
-        $stmt = db()->prepare('UPDATE ml_records SET data = ?, updated_at = ? WHERE id = ? AND kind = ?');
-        $stmt->execute([json_encode($data, JSON_UNESCAPED_UNICODE), $now, $data['id'], $kind]);
+        $stmt = db()->prepare('UPDATE ml_records SET data = ?, client_id = ?, assigned_clinician_id = ?, updated_at = ? WHERE id = ? AND kind = ?');
+        $stmt->execute([
+            json_encode($data, JSON_UNESCAPED_UNICODE), $data['client_id'] ?? null,
+            $data['assigned_clinician_id'] ?? null, $now, $data['id'], $kind,
+        ]);
     }
 }
 
@@ -422,6 +429,247 @@ function getAssessmentByToken(string $token, bool $forUpdate = false): ?array
     return $row ? decodeRecord($row['data']) : null;
 }
 
+// ------------------------------------------------------------------ Mentra website sync
+// Psychologists listed on the website become MindLedger psychologists, and paid or
+// confirmed website bookings become client files and sessions. Clients are matched by
+// phone or email, so a follow-up booking lands in the same file with all earlier notes.
+
+function mentraTablesExist(): bool
+{
+    $n = db()->query("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('psychologists', 'bookings')")->fetchColumn();
+    return (int)$n === 2;
+}
+
+function phoneKey(?string $phone): string
+{
+    $digits = preg_replace('/\D/', '', (string)$phone);
+    return strlen($digits) >= 10 ? substr($digits, -10) : '';
+}
+
+function syncMentraPsychologists(string $clinicId): array
+{
+    $pdo = db();
+    $map = [];
+    $rows = $pdo->query('SELECT id, slug, name, email, phone, photo_url, registration_number, is_active FROM psychologists')->fetchAll();
+    foreach ($rows as $p) {
+        $externalId = 'mentra-psy-' . $p['id'];
+        $email = strtolower(trim((string)$p['email']));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $email = '';
+        }
+        $stmt = $pdo->prepare('SELECT * FROM ml_users WHERE external_id = ?');
+        $stmt->execute([$externalId]);
+        $user = $stmt->fetch();
+        if (!$user && $email !== '') {
+            // A staff account added by hand with the same email is linked rather than duplicated.
+            $stmt = $pdo->prepare("SELECT * FROM ml_users WHERE email = ? AND clinic_id = ? AND role IN ('clinician', 'psychologist') AND external_id IS NULL");
+            $stmt->execute([$email, $clinicId]);
+            $user = $stmt->fetch();
+            if ($user) {
+                $pdo->prepare('UPDATE ml_users SET external_id = ? WHERE id = ?')->execute([$externalId, $user['id']]);
+            }
+        }
+
+        $photo = (string)$p['photo_url'];
+        if ($photo !== '' && !preg_match('#^(https?:)?//#', $photo)) {
+            $photo = '/' . ltrim($photo, '/');
+        }
+
+        if (!$user) {
+            $loginEmail = $email;
+            if ($loginEmail === '') {
+                $loginEmail = preg_replace('/[^a-z0-9.-]/', '', strtolower((string)$p['slug'])) . '@psychologist.mentracare.in';
+            }
+            $taken = $pdo->prepare('SELECT COUNT(*) FROM ml_users WHERE email = ?');
+            $taken->execute([$loginEmail]);
+            if ((int)$taken->fetchColumn() > 0) {
+                $loginEmail = 'psychologist-' . $p['id'] . '@psychologist.mentracare.in';
+            }
+            $id = newId();
+            $profile = array_filter([
+                'name' => (string)$p['name'],
+                'phone' => (string)$p['phone'],
+                'license_number' => (string)$p['registration_number'],
+                'avatar_url' => $photo,
+                'color' => '#2A9D8F',
+                'from_website' => true,
+                'needs_password' => true,
+                'placeholder_email' => $email === '',
+            ], fn($v) => $v !== '' && $v !== false);
+            $profile['phone'] = $profile['phone'] ?? '';
+            // Unusable random password until the owner sets one in Clinic Settings.
+            $pdo->prepare('INSERT INTO ml_users (id, clinic_id, email, password_hash, role, data, created_at, external_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+                ->execute([$id, $clinicId, $loginEmail, password_hash(bin2hex(random_bytes(24)), PASSWORD_DEFAULT), 'clinician', json_encode($profile, JSON_UNESCAPED_UNICODE), nowSql(), $externalId]);
+            $map[(int)$p['id']] = $id;
+            continue;
+        }
+
+        $map[(int)$p['id']] = $user['id'];
+        $profile = json_decode($user['data'], true) ?: [];
+        $updated = array_merge($profile, array_filter([
+            'name' => (string)$p['name'],
+            'phone' => (string)$p['phone'],
+            'license_number' => (string)$p['registration_number'],
+            'avatar_url' => $photo,
+        ], fn($v) => $v !== ''), ['from_website' => true]);
+        $newEmail = $user['email'];
+        if ($email !== '' && $email !== $user['email']) {
+            $taken = $pdo->prepare('SELECT COUNT(*) FROM ml_users WHERE email = ?');
+            $taken->execute([$email]);
+            if ((int)$taken->fetchColumn() === 0) {
+                $newEmail = $email;
+                unset($updated['placeholder_email']);
+            }
+        }
+        if ($updated != $profile || $newEmail !== $user['email']) {
+            $pdo->prepare('UPDATE ml_users SET data = ?, email = ? WHERE id = ?')
+                ->execute([json_encode($updated, JSON_UNESCAPED_UNICODE), $newEmail, $user['id']]);
+        }
+    }
+    return $map;
+}
+
+function findClientForBooking(string $clinicId, array $b): ?array
+{
+    $phone = phoneKey($b['client_phone'] ?? '');
+    $email = strtolower(trim((string)($b['client_email'] ?? '')));
+    foreach (listRecords('client', $clinicId) as $c) {
+        if (!empty($c['anonymized'])) {
+            continue;
+        }
+        if (($phone !== '' && phoneKey($c['phone'] ?? '') === $phone) || ($email !== '' && strtolower((string)($c['email'] ?? '')) === $email)) {
+            return $c;
+        }
+    }
+    return null;
+}
+
+function reassignClient(array $client, string $clinicianId): array
+{
+    $client['assigned_clinician_id'] = $clinicianId;
+    saveRecord('client', $client, false);
+    foreach (['note', 'assessment', 'session'] as $kind) {
+        foreach (listRecords($kind, $client['clinic_id'], 'client_id = ?', [$client['id']]) as $r) {
+            if (($r['assigned_clinician_id'] ?? null) !== $clinicianId) {
+                $r['assigned_clinician_id'] = $clinicianId;
+                saveRecord($kind, $r, false);
+            }
+        }
+    }
+    return $client;
+}
+
+function syncMentra(): void
+{
+    $pdo = db();
+    if (!mentraTablesExist()) {
+        return;
+    }
+    $clinicId = $pdo->query('SELECT id FROM ml_clinics ORDER BY created_at LIMIT 1')->fetchColumn();
+    if (!$clinicId) {
+        return;
+    }
+    if ((int)$pdo->query("SELECT GET_LOCK('mindledger_mentra_sync', 0)")->fetchColumn() !== 1) {
+        return;
+    }
+    try {
+        $psyMap = syncMentraPsychologists($clinicId);
+
+        $state = getRecord('sync', 'mentra-sync', $clinicId);
+        $since = $state['bookings_updated_at'] ?? '1970-01-01 00:00:00';
+        $stmt = $pdo->prepare('SELECT * FROM bookings WHERE updated_at >= ? ORDER BY slot_date, start_time, id');
+        $stmt->execute([$since]);
+        $latest = $since;
+
+        foreach ($stmt->fetchAll() as $b) {
+            if ($b['updated_at'] > $latest) {
+                $latest = $b['updated_at'];
+            }
+            $sessionId = 'mb-' . $b['id'];
+            $existing = getRecord('session', $sessionId, $clinicId);
+            $cancelled = in_array($b['booking_status'], ['cancelled', 'no_show'], true) || in_array($b['payment_status'], ['failed', 'cancelled'], true);
+            $eligible = !$cancelled && (in_array($b['booking_status'], ['confirmed', 'completed'], true) || $b['payment_status'] === 'completed');
+            $clinicianId = $psyMap[(int)$b['psychologist_id']] ?? null;
+            if (!$clinicianId) {
+                continue;
+            }
+            if (!$existing && !$eligible) {
+                continue;
+            }
+
+            $pdo->beginTransaction();
+            if ($existing) {
+                $client = getRecord('client', $existing['client_id'], $clinicId);
+            } else {
+                $client = findClientForBooking($clinicId, $b);
+            }
+            $bookingAt = $b['slot_date'] . ' ' . $b['start_time'];
+
+            if (!$client) {
+                $age = (int)($b['client_age'] ?? 0);
+                $client = [
+                    'id' => newId(),
+                    'clinic_id' => $clinicId,
+                    'name' => (string)$b['client_name'],
+                    'phone' => (string)$b['client_phone'],
+                    'email' => (string)($b['client_email'] ?? ''),
+                    'date_of_birth' => '',
+                    'age_at_intake' => $age > 0 ? $age : null,
+                    'emergency_contact_name' => 'Not provided',
+                    'emergency_contact_phone' => 'Not provided',
+                    'assigned_clinician_id' => $clinicianId,
+                    'is_minor' => $age > 0 && $age < 18,
+                    'consent_status' => 'pending',
+                    'status' => 'active',
+                    'created_at' => substr((string)$b['created_at'], 0, 10),
+                    'source' => 'website',
+                    'intake_concerns' => (string)($b['client_concerns'] ?? ''),
+                    'last_booking_at' => $bookingAt,
+                ];
+                saveRecord('client', $client, true);
+            } elseif (!$cancelled && $bookingAt >= ($client['last_booking_at'] ?? '')) {
+                // The most recent booking decides who the client's psychologist is now.
+                $client['last_booking_at'] = $bookingAt;
+                if (empty($client['intake_concerns']) && !empty($b['client_concerns'])) {
+                    $client['intake_concerns'] = (string)$b['client_concerns'];
+                }
+                if ($client['assigned_clinician_id'] !== $clinicianId) {
+                    $client = reassignClient($client, $clinicianId);
+                } else {
+                    saveRecord('client', $client, false);
+                }
+            }
+
+            $session = [
+                'id' => $sessionId,
+                'clinic_id' => $clinicId,
+                'client_id' => $client['id'],
+                'assigned_clinician_id' => $client['assigned_clinician_id'],
+                'clinician_id' => $clinicianId,
+                'booking_code' => (string)$b['booking_code'],
+                'date' => (string)$b['slot_date'],
+                'start_time' => substr((string)$b['start_time'], 0, 5),
+                'end_time' => substr((string)$b['end_time'], 0, 5),
+                'status' => $cancelled ? 'cancelled' : (string)$b['booking_status'],
+                'payment_status' => (string)$b['payment_status'],
+                'concerns' => (string)($b['client_concerns'] ?? ''),
+                'meet_url' => (string)($b['google_meet_url'] ?? ''),
+                'source' => 'website',
+            ];
+            saveRecord('session', $session, !$existing);
+            $pdo->commit();
+        }
+
+        $syncState = ['id' => 'mentra-sync', 'clinic_id' => $clinicId, 'bookings_updated_at' => $latest, 'synced_at' => isoNow()];
+        saveRecord('sync', $syncState, $state === null);
+    } finally {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $pdo->query("SELECT RELEASE_LOCK('mindledger_mentra_sync')");
+    }
+}
+
 // ------------------------------------------------------------------ Routing
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -547,6 +795,12 @@ switch ($route) {
     case 'GET data': {
         $me = currentUser();
         $cid = $me['clinic_id'];
+        try {
+            syncMentra();
+        } catch (Throwable $e) {
+            // A website sync problem must never block access to existing records.
+            error_log('MindLedger Mentra sync: ' . $e->getMessage() . ' @ line ' . $e->getLine());
+        }
         $stmt = db()->prepare('SELECT * FROM ml_users WHERE clinic_id = ? AND active = 1 ORDER BY created_at');
         $stmt->execute([$cid]);
         $users = array_map('publicUser', $stmt->fetchAll());
@@ -556,10 +810,12 @@ switch ($route) {
         $dpdp = [];
         if (isClinicianRole($me)) {
             $clients = listRecords('client', $cid, 'assigned_clinician_id = ?', [$me['id']]);
+            $sessions = listRecords('session', $cid, 'assigned_clinician_id = ? OR clinician_id = ?', [$me['id'], $me['id']]);
             $notes = listRecords('note', $cid, 'assigned_clinician_id = ? OR clinician_id = ?', [$me['id'], $me['id']]);
             $assessments = listRecords('assessment', $cid, 'assigned_clinician_id = ? OR clinician_id = ?', [$me['id'], $me['id']]);
         } else {
             $clients = listRecords('client', $cid);
+            $sessions = listRecords('session', $cid);
             if (isOwnerRole($me)) {
                 $notes = listRecords('note', $cid);
                 $assessments = listRecords('assessment', $cid);
@@ -578,6 +834,8 @@ switch ($route) {
             'assessments' => $assessments,
             'consentRecords' => $consents,
             'dpdpRequests' => $dpdp,
+            'sessions' => $sessions,
+            'websiteLinked' => mentraTablesExist(),
         ]);
     }
 
@@ -665,7 +923,10 @@ switch ($route) {
             }
             $password = (string)($body['password'] ?? '');
             validPassword($password);
-            db()->prepare('UPDATE ml_users SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $staffId]);
+            $profile = json_decode($staff['data'], true) ?: [];
+            unset($profile['needs_password']);
+            db()->prepare('UPDATE ml_users SET password_hash = ?, data = ? WHERE id = ?')
+                ->execute([password_hash($password, PASSWORD_DEFAULT), json_encode($profile, JSON_UNESCAPED_UNICODE), $staffId]);
             db()->prepare('DELETE FROM ml_sessions WHERE user_id = ?')->execute([$staffId]);
             audit($me, 'STAFF_PASSWORD_RESET', 'User', $staffId, "Reset password for {$staffUser['name']}.");
         }
@@ -850,6 +1111,13 @@ switch ($route) {
             fail(403, 'Client Coordinators cannot create clinical session notes.');
         }
         $client = visibleClient($me, str($body, 'client_id', 32));
+        $appointmentId = str($body, 'appointment_id', 64);
+        if ($appointmentId !== '') {
+            $session = getRecord('session', $appointmentId, $me['clinic_id']);
+            if (!$session || $session['client_id'] !== $client['id']) {
+                $appointmentId = '';
+            }
+        }
         $now = isoNow();
         $note = [
             'id' => newId(),
@@ -858,6 +1126,7 @@ switch ($route) {
             'assigned_clinician_id' => $client['assigned_clinician_id'],
             'clinician_id' => $me['id'],
             'clinician_name' => $me['name'],
+            'appointment_id' => $appointmentId !== '' ? $appointmentId : null,
             'status' => 'draft',
             'addenda' => [],
             'created_at' => $now,

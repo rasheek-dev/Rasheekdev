@@ -41,6 +41,8 @@ const EMPTY_DATA: Omit<ClinicData, 'clinic'> = {
   assessments: [],
   consentRecords: [],
   dpdpRequests: [],
+  sessions: [],
+  websiteLinked: false,
 };
 
 function FullScreenMessage({ title, children }: { title: string; children: React.ReactNode }) {
@@ -143,6 +145,7 @@ function Workspace({
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedClientId, setSelectedClientId] = useState<string | undefined>();
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>();
+  const [selectedSessionId, setSelectedSessionId] = useState<string | undefined>();
   const [editorSession, setEditorSession] = useState(0);
   const [assessmentClientId, setAssessmentClientId] = useState<string | undefined>();
   const [showClientModal, setShowClientModal] = useState(false);
@@ -175,6 +178,8 @@ function Workspace({
         assessments: result.assessments,
         consentRecords: result.consentRecords,
         dpdpRequests: result.dpdpRequests,
+        sessions: result.sessions || [],
+        websiteLinked: Boolean(result.websiteLinked),
       });
       setLoadError(null);
     } catch (err) {
@@ -213,9 +218,10 @@ function Workspace({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenNote = (noteId?: string, clientId?: string) => {
+  const handleOpenNote = (noteId?: string, clientId?: string, sessionId?: string) => {
     if (clientId) setSelectedClientId(clientId);
     setSelectedNoteId(noteId);
+    setSelectedSessionId(sessionId);
     setEditorSession((n) => n + 1);
     setActiveTab('note-editor');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -236,12 +242,14 @@ function Workspace({
     setClinic(saved);
   };
 
-  const { users, clients, notes, assessments, consentRecords, dpdpRequests } = data;
+  const { users, clients, notes, assessments, consentRecords, dpdpRequests, sessions } = data;
   const activeClient = clients.find((c) => c.id === selectedClientId);
   const clientNotes = notes.filter((n) => n.client_id === activeClient?.id);
   const clientAssessments = assessments.filter((a) => a.client_id === activeClient?.id);
   const clientConsents = consentRecords.filter((c) => c.client_id === activeClient?.id);
   const activeNote = notes.find((n) => n.id === selectedNoteId);
+  const clientSessions = sessions.filter((s) => s.client_id === activeClient?.id);
+  const activeSession = sessions.find((s) => s.id === (activeNote?.appointment_id || selectedSessionId));
   const clinicians = users.filter((u) => u.role === 'clinician' || u.role === 'psychologist' || u.role === 'owner');
 
   if (!loaded) return <Spinner label="Loading your practice..." />;
@@ -345,6 +353,7 @@ function Workspace({
                 clients={clients}
                 notes={notes}
                 assessments={assessments}
+                sessions={sessions}
                 currentUser={user}
                 allUsers={users}
                 clinic={clinic}
@@ -373,6 +382,7 @@ function Workspace({
                 client={activeClient}
                 notes={clientNotes}
                 assessments={clientAssessments}
+                sessions={clientSessions}
                 consentRecords={clientConsents}
                 allUsers={users}
                 clinic={clinic}
@@ -388,6 +398,7 @@ function Workspace({
               <SessionNoteEditor
                 key={editorSession}
                 note={activeNote}
+                session={activeSession}
                 client={activeClient}
                 currentUser={user}
                 onBack={() => setActiveTab('client-detail')}

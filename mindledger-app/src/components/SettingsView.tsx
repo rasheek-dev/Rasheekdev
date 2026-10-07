@@ -220,11 +220,14 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
   };
 
   const handleResetPassword = async (u: User) => {
-    const password = prompt(`New password for ${u.name} (at least 8 characters):`);
+    const password = prompt(
+      `${u.needs_password ? 'Set a login password' : 'New password'} for ${u.name} (at least 8 characters).\nThey sign in with: ${u.email}`
+    );
     if (password === null) return;
     try {
       await resetStaffPassword(u, password);
-      alert(`Password updated. Give ${u.name} the new password; they have been signed out everywhere.`);
+      alert(`Password saved. ${u.name} can now sign in with ${u.email} and this password.`);
+      onRefresh?.();
     } catch (e) {
       alert((e as Error).message);
     }
@@ -616,6 +619,16 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
                       <span className="px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 font-semibold capitalize text-[10px]">
                         {u.role === 'owner' ? 'Clinic Owner' : u.role === 'clinician' ? 'Psychologist' : 'Coordinator'}
                       </span>
+                      {u.from_website && (
+                        <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
+                          From website
+                        </span>
+                      )}
+                      {u.needs_password && (
+                        <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                          Login not set up
+                        </span>
+                      )}
                       {isCurrentLoggedInUser && (
                         <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
                           Active Session (You)
@@ -650,7 +663,7 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
                           className="px-2.5 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-all flex items-center gap-1 shadow-2xs"
                         >
                           <Key className="w-3.5 h-3.5 text-[#5749e2]" />
-                          <span>Reset Password</span>
+                          <span>{u.needs_password ? 'Set Password' : 'Reset Password'}</span>
                         </button>
                         <button
                           type="button"
