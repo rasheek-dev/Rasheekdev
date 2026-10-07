@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   ChevronRight,
   ShieldAlert,
-  Globe,
+  CalendarClock,
   Video,
 } from 'lucide-react';
 import { Assessment, Client, SessionNote, User, Clinic, WebSession, isOwner, isPsychologist, isCoordinator } from '../types';
@@ -93,9 +93,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }, []);
   const upcomingSessions = byClinician(sessions)
-    .filter((s) => s.status !== 'cancelled' && s.date >= todayKey)
+    .filter((s) => (s.status === 'confirmed' || s.status === 'completed') && s.date >= todayKey)
     .sort((a, b) => `${a.date} ${a.start_time}`.localeCompare(`${b.date} ${b.start_time}`))
-    .slice(0, 8);
+    .slice(0, 12);
+  const todayCount = upcomingSessions.filter((s) => s.date === todayKey).length;
 
   const listedNotes = (notesView === 'drafts' ? draftNotes : visibleNotes).slice(0, 8);
   const clientName = (id: string) => clients.find((c) => c.id === id)?.name || 'Client';
@@ -197,19 +198,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
-      {sessions.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-blue-600" />
-                Upcoming Website Sessions
+                <CalendarClock className="w-4 h-4 text-[#5749e2]" />
+                Upcoming Sessions
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700">{todayCount} today</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Booked on your website. Returning clients open their existing file with all earlier reports.
+                {userIsPsychologist
+                  ? 'Open a session to write its report. Earlier reports are in the client file.'
+                  : 'Book a session for a new or returning client. The psychologist sees it here at that date and time.'}
               </p>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">{upcomingSessions.length}</span>
+            {!userIsPsychologist && (
+              <button
+                onClick={onNewClient}
+                className="px-3 py-1.5 bg-[#5749e2] hover:bg-[#4738cf] text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shrink-0"
+              >
+                <CalendarClock className="w-3.5 h-3.5" />
+                Book Session
+              </button>
+            )}
           </div>
           {upcomingSessions.length === 0 && <p className="text-xs text-slate-400 py-2">No upcoming sessions.</p>}
           <div className="grid md:grid-cols-2 gap-2.5">
@@ -217,18 +228,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               const sessNote = notes.find((n) => n.appointment_id === sess.id);
               const psych = allUsers.find((u) => u.id === sess.clinician_id);
               const pastReports = notes.filter((n) => n.client_id === sess.client_id && n.appointment_id !== sess.id).length;
-              const isFollowUp = sessions.some(
-                (o) => o.client_id === sess.client_id && o.status !== 'cancelled' && `${o.date} ${o.start_time}` < `${sess.date} ${sess.start_time}`
-              );
+              const reportsBefore = Math.max(pastReports, (clients.find((c) => c.id === sess.client_id)?.reports_count ?? 0) - (sessNote ? 1 : 0));
+              const isFollowUp =
+                reportsBefore > 0 ||
+                sessions.some(
+                  (o) => o.client_id === sess.client_id && o.status !== 'cancelled' && `${o.date} ${o.start_time}` < `${sess.date} ${sess.start_time}`
+                );
               const isToday = sess.date === todayKey;
               return (
-                <div key={sess.id} className="p-3.5 rounded-xl border border-slate-200 border-l-4 border-l-blue-400 flex items-center justify-between gap-3">
+                <div
+                  key={sess.id}
+                  className={`p-3.5 rounded-xl border border-slate-200 border-l-4 flex items-center justify-between gap-3 ${
+                    sess.status === 'completed' ? 'border-l-emerald-400 opacity-70' : 'border-l-[#5749e2]'
+                  }`}
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isToday ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
                         {isToday ? 'Today' : formatSessionDate(sess.date)}
                       </span>
-                      <span className="text-xs font-bold text-slate-800">{sess.start_time}</span>
+                      <span className="text-xs font-bold text-slate-800">
+                        {sess.start_time}&ndash;{sess.end_time}
+                      </span>
+                      {sess.mode && sess.mode !== 'in_person' && (
+                        <span className="text-[10px] font-semibold text-blue-700">{sess.mode === 'online' ? 'Online' : 'Phone'}</span>
+                      )}
+                      {sess.status === 'completed' && <span className="text-[10px] font-semibold text-emerald-700">Done</span>}
                     </div>
                     <button
                       onClick={() => onSelectClient(sess.client_id)}
@@ -276,7 +301,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             })}
           </div>
         </div>
-      )}
 
       <div className="grid lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">

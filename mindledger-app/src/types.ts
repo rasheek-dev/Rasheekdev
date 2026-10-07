@@ -85,7 +85,11 @@ export interface WebSession {
   meet_url: string;
   payment_id?: string;
   payment_verified?: boolean;
-  source: 'website';
+  duration_minutes?: number;
+  mode?: 'in_person' | 'online' | 'phone';
+  notes?: string;
+  booked_by?: string;
+  source: 'website' | 'clinic';
 }
 
 export type NoteTemplateType = 'SOAP' | 'DAP' | 'free_text' | 'Free Text';

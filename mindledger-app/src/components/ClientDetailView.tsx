@@ -19,11 +19,13 @@ import {
   Copy,
   Globe,
   Video,
+  CalendarClock,
 } from 'lucide-react';
 import { Client, SessionNote, Assessment, ConsentRecord, User, Clinic, WebSession, isOwner, isPsychologist, isCoordinator } from '../types';
 import { formatSessionDate } from './SessionNoteEditor';
 import { ASSESSMENT_DEFINITIONS } from '../data/clinicalData';
-import { withdrawConsent, eraseClient, buildClientExport, assessmentLink } from '../lib/api';
+import { withdrawConsent, eraseClient, buildClientExport, assessmentLink, updateSessionStatus } from '../lib/api';
+import { todayKey } from './BookSessionModal';
 import { printClientReport } from './clientReport';
 
 interface ClientDetailViewProps {
@@ -39,7 +41,11 @@ interface ClientDetailViewProps {
   onOpenNote: (noteId?: string, clientId?: string, sessionId?: string) => void;
   onSendAssessment: (clientId: string) => void;
   onRefreshData: () => void;
+  onBookSession: () => void;
 }
+
+const MODE_LABEL: Record<string, string> = { in_person: 'In person', online: 'Online', phone: 'Phone' };
+const STATUS_LABEL: Record<string, string> = { completed: 'Completed', cancelled: 'Cancelled', no_show: 'No-show' };
 
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
@@ -54,10 +60,12 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   onOpenNote,
   onSendAssessment,
   onRefreshData,
+  onBookSession,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'notes' | 'assessments' | 'consent'>('overview');
   const [withdrawing, setWithdrawing] = useState(false);
   const [erasing, setErasing] = useState(false);
+  const [updatingSession, setUpdatingSession] = useState<string | null>(null);
 
   // PSYCHOLOGIST BOUNDARY: If a psychologist attempts to view a client not in their assigned caseload, show Access Denied
   if (isPsychologist(currentUser.role) && client.assigned_clinician_id !== currentUser.id) {
@@ -107,6 +115,19 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
       alert((e as Error).message);
     } finally {
       setWithdrawing(false);
+    }
+  };
+
+  const handleSessionStatus = async (sess: WebSession, status: 'completed' | 'cancelled' | 'no_show') => {
+    if (status === 'cancelled' && !confirm(`Cancel the session on ${formatSessionDate(sess.date)} at ${sess.start_time}?`)) return;
+    setUpdatingSession(sess.id);
+    try {
+      await updateSessionStatus(sess, status);
+      onRefreshData();
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setUpdatingSession(null);
     }
   };
 
@@ -171,6 +192,15 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               <Download className="w-3.5 h-3.5" />
               <span>DPDP Data Export</span>
             </button>
+            {!client.anonymized && (
+              <button
+                onClick={onBookSession}
+                className="px-3 py-1.5 bg-[#5749e2] hover:bg-[#4738cf] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                <CalendarClock className="w-3.5 h-3.5" />
+                <span>Book Session</span>
+              </button>
+            )}
             {!userIsCoordinator && (
               <button
                 onClick={() => onSendAssessment(client.id)}
@@ -293,79 +323,112 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
       {activeTab === 'overview' && (
         <div className="grid md:grid-cols-12 gap-6">
           <div className="md:col-span-8 space-y-4">
-            {sortedSessions.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-blue-600" />
-                    Website Sessions ({sortedSessions.length})
-                  </h3>
-                  <span className="text-[10px] text-slate-400">Booked on your website</span>
-                </div>
-                <div className="space-y-2">
-                  {sortedSessions.map((sess) => {
-                    const sessNote = notes.find((n) => n.appointment_id === sess.id);
-                    const psych = allUsers.find((u) => u.id === sess.clinician_id);
-                    const cancelled = sess.status === 'cancelled';
-                    return (
-                      <div
-                        key={sess.id}
-                        className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-                          cancelled ? 'border-slate-200 bg-slate-50 opacity-70' : 'border-slate-200'
-                        }`}
-                      >
-                        <div className="text-xs">
-                          <div className="font-bold text-slate-900">
-                            {formatSessionDate(sess.date)}, {sess.start_time}&ndash;{sess.end_time}
-                            {cancelled && <span className="ml-2 text-red-600 font-semibold">Cancelled</span>}
-                            {!cancelled && sess.payment_verified === false && !userIsPsychologist && (
-                              <span
-                                className="ml-2 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded"
-                                title="Not checked against Razorpay. Add the Razorpay key secret to mindledger/api/config.php to verify payments automatically."
-                              >
-                                Payment not verified
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-slate-500">
-                            {psych?.name || 'Psychologist'} &bull; {sess.booking_code}
-                            {sess.concerns && !userIsCoordinator ? ` \u2022 ${sess.concerns}` : ''}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {sess.meet_url && !cancelled && (
-                            <a
-                              href={sess.meet_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 inline-flex items-center gap-1"
-                            >
-                              <Video className="w-3 h-3" />
-                              Meet
-                            </a>
-                          )}
-                          {!userIsCoordinator && !cancelled && (
-                            <button
-                              onClick={() => onOpenNote(sessNote?.id, client.id, sess.id)}
-                              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 ${
-                                sessNote
-                                  ? sessNote.status === 'signed'
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : 'bg-amber-50 text-amber-700'
-                                  : 'bg-[#5749e2] text-white'
-                              }`}
-                            >
-                              <FileText className="w-3 h-3" />
-                              {sessNote ? (sessNote.status === 'signed' ? 'View Report' : 'Continue Report') : 'Write Report'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <CalendarClock className="w-4 h-4 text-[#5749e2]" />
+                  Sessions ({sortedSessions.length})
+                </h3>
+                {!client.anonymized && (
+                  <button onClick={onBookSession} className="text-xs font-semibold text-[#5749e2] hover:underline flex items-center gap-1">
+                    <Plus className="w-3.5 h-3.5" />
+                    Book Session
+                  </button>
+                )}
               </div>
-            )}
+              {sortedSessions.length === 0 && <p className="text-xs text-slate-400">No sessions booked yet.</p>}
+              <div className="space-y-2">
+                {sortedSessions.map((sess) => {
+                  const sessNote = notes.find((n) => n.appointment_id === sess.id);
+                  const psych = allUsers.find((u) => u.id === sess.clinician_id);
+                  const cancelled = sess.status === 'cancelled';
+                  const open = sess.status === 'confirmed';
+                  const busy = updatingSession === sess.id;
+                  return (
+                    <div
+                      key={sess.id}
+                      className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+                        cancelled ? 'border-slate-200 bg-slate-50 opacity-70' : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="text-xs min-w-0">
+                        <div className="font-bold text-slate-900">
+                          {formatSessionDate(sess.date)}, {sess.start_time}&ndash;{sess.end_time}
+                          {!open && (
+                            <span className={`ml-2 font-semibold ${sess.status === 'completed' ? 'text-emerald-700' : 'text-red-600'}`}>
+                              {STATUS_LABEL[sess.status] || sess.status}
+                            </span>
+                          )}
+                          {open && sess.date < todayKey() && <span className="ml-2 text-amber-700 font-semibold">Past</span>}
+                        </div>
+                        <div className="text-[11px] text-slate-500">
+                          {psych?.name || 'Psychologist'}
+                          {sess.mode ? ` \u2022 ${MODE_LABEL[sess.mode] || sess.mode}` : ''} &bull; {sess.booking_code}
+                          {sess.booked_by ? ` \u2022 booked by ${sess.booked_by}` : ''}
+                        </div>
+                        {sess.notes && <div className="text-[11px] text-slate-600 mt-0.5">Note: {sess.notes}</div>}
+                        {sess.concerns && !userIsCoordinator && <div className="text-[11px] text-slate-600 mt-0.5">{sess.concerns}</div>}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                        {sess.meet_url && !cancelled && (
+                          <a
+                            href={sess.meet_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 inline-flex items-center gap-1"
+                          >
+                            <Video className="w-3 h-3" />
+                            Meet
+                          </a>
+                        )}
+                        {open && (
+                          <>
+                            {!userIsCoordinator && (
+                              <button
+                                disabled={busy}
+                                onClick={() => handleSessionStatus(sess, 'completed')}
+                                className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                              >
+                                Done
+                              </button>
+                            )}
+                            <button
+                              disabled={busy}
+                              onClick={() => handleSessionStatus(sess, 'no_show')}
+                              className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+                            >
+                              No-show
+                            </button>
+                            <button
+                              disabled={busy}
+                              onClick={() => handleSessionStatus(sess, 'cancelled')}
+                              className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                        {!userIsCoordinator && !cancelled && (
+                          <button
+                            onClick={() => onOpenNote(sessNote?.id, client.id, sess.id)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 ${
+                              sessNote
+                                ? sessNote.status === 'signed'
+                                  ? 'bg-emerald-50 text-emerald-700'
+                                  : 'bg-amber-50 text-amber-700'
+                                : 'bg-[#5749e2] text-white'
+                            }`}
+                          >
+                            <FileText className="w-3 h-3" />
+                            {sessNote ? (sessNote.status === 'signed' ? 'View Report' : 'Continue Report') : 'Write Report'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
               <h3 className="text-sm font-bold text-slate-900">Clinical Case Summary</h3>

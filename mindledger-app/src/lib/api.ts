@@ -200,6 +200,23 @@ export async function assignClient(client: Client, clinicianId: string): Promise
   return data.client;
 }
 
+export async function bookSession(input: {
+  client_id: string;
+  clinician_id: string;
+  date: string;
+  start_time: string;
+  duration_minutes: number;
+  mode: 'in_person' | 'online' | 'phone';
+  notes?: string;
+}): Promise<{ session: WebSession; client: Client }> {
+  return call('POST', 'sessions', input);
+}
+
+export async function updateSessionStatus(session: WebSession, status: 'confirmed' | 'completed' | 'cancelled' | 'no_show') {
+  const data = await call<{ session: WebSession }>('PATCH', `sessions/${session.id}`, { status });
+  return data.session;
+}
+
 export async function withdrawConsent(client: Client, purpose: string, reason: string) {
   const data = await call<{ record: ConsentRecord }>('POST', `clients/${client.id}/consent-withdraw`, { purpose, reason });
   return data.record;

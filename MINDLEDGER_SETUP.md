@@ -10,9 +10,9 @@ MindLedger uses an existing MySQL database. It creates its own tables, all named
 
 ```php
 'db_host' => 'localhost',
-'db_name' => 'ul80950667_mentra_booking',
-'db_user' => 'ul80950667_mentra_user',
-'db_pass' => 'MentraBooking#2026!',
+'db_name' => 'u180950667_mentra',
+'db_user' => 'u180950667_mentra',
+'db_pass' => '(your database password)',
 ```
 
 If your database in **hPanel → Databases → Management** has a different name, user or password, change these four lines after uploading (step 2). If you have no database yet, create one there first.
@@ -43,17 +43,22 @@ MindLedger reads `public_html/psychologists.js`, the file you already edit to li
 - The login email is built from the name, e.g. `anjali.nair@psychologist.mentracare.in`. To use a real address, add a line such as `email: "anjali@mentracare.in",` to that psychologist in `psychologists.js`.
 - Name, title, photo and registration follow the file. `active: false` stops new accounts but does not delete existing ones; remove someone in Clinic Settings.
 
-## Returning clients
+## Booking sessions
 
-When a client comes back, click **New Client** and type their phone number in **Returning client? Search by phone number** (4 digits are enough).
+The front desk (or owner) books every visit inside MindLedger, so the psychologist sees the client at that date and time.
 
-- Pick them from the list to see their file, their **previous reports** and assessment scores. The front desk sees how many reports exist; only the psychologist and owner see what they say.
-- Choose the psychologist for this visit and click **Assign & Open File**. If it's a different psychologist, the whole file, including all earlier reports, moves to them so they can read the history and add the new report.
-- Typing an existing number into the new-client form also warns you, so the same person doesn't get two files.
+- **New client**: **New Client** (or **Book Session** on the dashboard) → fill in the client's details → in **First session** choose the psychologist, date, start time, length and mode → **Create Client & Book Session**.
+- **Returning client**: type their phone number in **Returning client? Search by phone number** (4 digits are enough) and pick them. **Follow-up session** is right at the top: choose psychologist, date and time → **Book Session & Open File**. If it's a different psychologist, the whole file, including all earlier reports, moves to them.
+- Below the time you see what that psychologist already has booked that day. A time that overlaps another booking is refused, so nobody is double-booked.
+- Untick **Book now** to only create the file or only change the psychologist, without a session.
+- Inside a client file, **Book Session** adds another visit. The **Sessions** list shows every booking with **Done**, **No-show** and **Cancel** buttons. A cancelled time can be booked again.
+- The psychologist sees **Upcoming Sessions** on their dashboard and clicks **Write Report** to write the report for that session. The client's earlier reports and assessment scores are in the client file.
+- The front desk sees how many reports a client has, not what they say.
+- Typing an existing number into the new-client form warns you, so the same person doesn't get two files.
 
 ## Everyday use
 
-- **Clients**: the owner or a coordinator creates the client file and assigns a psychologist.
+- **Clients**: the owner or a coordinator creates the client file, assigns a psychologist and books the session.
 - **Session notes**: open a client → **Write Clinical Note** → **Save Draft** → **Sign & Lock**. Signed notes cannot be changed; use **Add Addendum**.
 - **Assessments**: **Send Assessment** → choose client and PHQ-9 or GAD-7 → **Generate Link** → **Send on WhatsApp** (or copy/email). The client answers on their phone without logging in, and the score appears straight away. Each link works once and expires after 7 days. A PHQ-9 with item 9 (thoughts of self-harm) above zero is flagged in red.
 - **Reports**: **Clinical Reports** (owner) shows clinic activity with CSV export. **Print Client Report** in a client's file prints one client.
@@ -92,3 +97,4 @@ The server enforces these limits, not just the screens.
 - `npm run lint`: type check
 - `npm run package`: build and create `mindledger-upload.zip`
 - `node scripts/api-security-test.mjs <api url>`: 65 permission checks against a fresh database
+- `node scripts/website-sync-test.mjs <api url> <web root>`: psychologists.js accounts, returning clients and session booking (37 checks)

@@ -986,6 +986,105 @@ switch ($route) {
         respond(200, ['ok' => true, 'client' => $client]);
     }
 
+    case 'POST sessions': {
+        $me = currentUser();
+        $clinicianId = str($body, 'clinician_id', 32);
+        if (isClinicianRole($me) && $clinicianId !== $me['id']) {
+            fail(403, 'Psychologists can only book sessions with themselves.');
+        }
+        $stmt = db()->prepare("SELECT data FROM ml_users WHERE id = ? AND clinic_id = ? AND active = 1 AND role IN ('owner', 'clinician', 'psychologist')");
+        $stmt->execute([$clinicianId, $me['clinic_id']]);
+        $psychRow = $stmt->fetch();
+        if (!$psychRow) {
+            fail(400, 'Please choose a psychologist.');
+        }
+        $psychName = (json_decode($psychRow['data'], true) ?: [])['name'] ?? 'The psychologist';
+        $date = str($body, 'date', 10);
+        $time = str($body, 'start_time', 5);
+        $minutes = (int)($body['duration_minutes'] ?? 0);
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || !strtotime($date) || !preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $time)) {
+            fail(400, 'Please choose a valid date and time.');
+        }
+        if ($minutes < 10 || $minutes > 240) {
+            fail(400, 'Session length must be between 10 and 240 minutes.');
+        }
+        $startTs = strtotime("$date $time");
+        $endTime = date('H:i', $startTs + $minutes * 60);
+        if (date('Y-m-d', $startTs + $minutes * 60) !== $date) {
+            fail(400, 'The session must end on the same day.');
+        }
+        $mode = in_array($body['mode'] ?? '', ['in_person', 'online', 'phone'], true) ? $body['mode'] : 'in_person';
+
+        $pdo = db();
+        $pdo->beginTransaction();
+        $client = visibleClient($me, str($body, 'client_id', 32), true);
+        if (!empty($client['anonymized'])) {
+            fail(409, 'This client file was erased under DPDP. Please register the client again.');
+        }
+        // Lock the psychologist's row so two people cannot book the same slot at once.
+        $pdo->prepare('SELECT id FROM ml_users WHERE id = ? FOR UPDATE')->execute([$clinicianId]);
+        foreach (listRecords('session', $me['clinic_id'], 'clinician_id = ?', [$clinicianId]) as $other) {
+            if (($other['date'] ?? '') !== $date || ($other['status'] ?? '') === 'cancelled') {
+                continue;
+            }
+            if ($time < $other['end_time'] && $endTime > $other['start_time']) {
+                $who = getRecord('client', $other['client_id'], $me['clinic_id']);
+                fail(409, "$psychName already has a session {$other['start_time']}–{$other['end_time']} on this day" . ($who ? " with {$who['name']}" : '') . '.', 'conflict');
+            }
+        }
+        if ($client['assigned_clinician_id'] !== $clinicianId) {
+            $client = reassignClient($client, $clinicianId);
+        }
+        $client['status'] = 'active';
+        $client['last_visit_at'] = isoNow();
+        saveRecord('client', $client, false);
+        $session = [
+            'id' => newId(),
+            'clinic_id' => $me['clinic_id'],
+            'client_id' => $client['id'],
+            'assigned_clinician_id' => $client['assigned_clinician_id'],
+            'clinician_id' => $clinicianId,
+            'booking_code' => 'S-' . strtoupper(substr(newId(), 0, 6)),
+            'date' => $date,
+            'start_time' => $time,
+            'end_time' => $endTime,
+            'duration_minutes' => $minutes,
+            'mode' => $mode,
+            'notes' => str($body, 'notes', 500),
+            'status' => 'confirmed',
+            'concerns' => '',
+            'meet_url' => '',
+            'source' => 'clinic',
+            'booked_by' => $me['name'],
+            'booked_at' => isoNow(),
+        ];
+        saveRecord('session', $session, true);
+        audit($me, 'SESSION_BOOKED', 'Session', $session['id'], "Booked {$client['name']} with $psychName on $date at $time.");
+        $pdo->commit();
+        respond(201, ['ok' => true, 'session' => $session, 'client' => $client]);
+    }
+
+    case 'PATCH sessions/:id': {
+        $me = currentUser();
+        $status = str($body, 'status', 20);
+        if (!in_array($status, ['confirmed', 'completed', 'cancelled', 'no_show'], true)) {
+            fail(400, 'Unknown session status.');
+        }
+        $pdo = db();
+        $pdo->beginTransaction();
+        $session = getRecord('session', $parts[1], $me['clinic_id'], true);
+        if (!$session || (isClinicianRole($me) && !canSeeClinical($me, $session))) {
+            fail(404, 'Session not found.');
+        }
+        $session['status'] = $status;
+        $session['status_changed_by'] = $me['name'];
+        $session['status_changed_at'] = isoNow();
+        saveRecord('session', $session, false);
+        audit($me, 'SESSION_' . strtoupper($status), 'Session', $session['id'], "Session on {$session['date']} {$session['start_time']} marked $status.");
+        $pdo->commit();
+        respond(200, ['ok' => true, 'session' => $session]);
+    }
+
     case 'POST clients/:id/consent-withdraw': {
         $me = currentUser();
         $pdo = db();

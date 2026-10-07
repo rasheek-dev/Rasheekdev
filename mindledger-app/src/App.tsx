@@ -16,6 +16,7 @@ import { SettingsView } from './components/SettingsView';
 import { PublicAssessment } from './components/PublicAssessment';
 import { DataRightsModal } from './components/DataRightsModal';
 import { NewClientModal } from './components/NewClientModal';
+import { BookSessionModal } from './components/BookSessionModal';
 import { SignupPage } from './components/SignupPage';
 import { LoginPage } from './components/LoginPage';
 
@@ -150,6 +151,7 @@ function Workspace({
   const [assessmentClientId, setAssessmentClientId] = useState<string | undefined>();
   const [showClientModal, setShowClientModal] = useState(false);
   const [showDataRightsModal, setShowDataRightsModal] = useState(false);
+  const [bookingClientId, setBookingClientId] = useState<string | undefined>();
 
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(102);
@@ -391,6 +393,7 @@ function Workspace({
                 onOpenNote={handleOpenNote}
                 onSendAssessment={handleSendAssessment}
                 onRefreshData={loadData}
+                onBookSession={() => setBookingClientId(activeClient.id)}
               />
             )}
 
@@ -446,12 +449,28 @@ function Workspace({
           clients={clients}
           notes={notes}
           assessments={assessments}
+          sessions={sessions}
           canSeeReports={userIsOwner}
           onClose={() => setShowClientModal(false)}
           onSuccess={(client) => {
             setShowClientModal(false);
             loadData();
             handleSelectClient(client.id);
+          }}
+        />
+      )}
+
+      {bookingClientId && clients.some((c) => c.id === bookingClientId) && (
+        <BookSessionModal
+          client={clients.find((c) => c.id === bookingClientId)!}
+          clinicians={userIsPsychologist ? clinicians.filter((c) => c.id === user.id) : clinicians}
+          sessions={sessions}
+          clients={clients}
+          currentUser={user}
+          onClose={() => setBookingClientId(undefined)}
+          onBooked={() => {
+            setBookingClientId(undefined);
+            loadData();
           }}
         />
       )}

@@ -328,7 +328,7 @@ const NoteEditorBody: React.FC<SessionNoteEditorProps> = ({ note, session, clien
               {currentNote?.status === 'draft' && ' \u2022 Draft (not yet signed)'}
               {session && (
                 <>
-                  {' \u2022 '}Website session {formatSessionDate(session.date)}, {session.start_time}&ndash;{session.end_time}
+                  {' \u2022 '}Session {formatSessionDate(session.date)}, {session.start_time}&ndash;{session.end_time}
                   {session.booking_code ? ` (${session.booking_code})` : ''}
                 </>
               )}

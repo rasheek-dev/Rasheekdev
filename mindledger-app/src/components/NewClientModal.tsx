@@ -1,16 +1,48 @@
 import React, { useMemo, useState } from 'react';
-import { X, Search, UserCheck, ArrowLeft, FileText, Lock, ClipboardCheck } from 'lucide-react';
-import { Assessment, Client, SessionNote, User } from '../types';
+import { X, Search, UserCheck, ArrowLeft, FileText, Lock, ClipboardCheck, CalendarClock } from 'lucide-react';
+import { Assessment, Client, SessionNote, User, WebSession } from '../types';
 import { createClient, assignClient } from '../lib/api';
+import { SessionDraft, SessionFields, findConflict, newSessionDraft, submitSession, todayKey } from './BookSessionModal';
+import { formatSessionDate } from './SessionNoteEditor';
 
 interface NewClientModalProps {
   clinicians: User[];
   clients: Client[];
   notes: SessionNote[];
   assessments: Assessment[];
+  sessions: WebSession[];
   canSeeReports: boolean;
   onClose: () => void;
   onSuccess: (client: Client) => void;
+}
+
+/** "Book a session now" switch with the date/time fields underneath. */
+function SessionSection({
+  title,
+  bookNow,
+  setBookNow,
+  children,
+}: {
+  title: string;
+  bookNow: boolean;
+  setBookNow: (v: boolean) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="p-3 rounded-xl border border-[#d4d0fb] bg-[#f4f3fe]/50 space-y-3 text-xs">
+      <label className="flex items-center justify-between gap-2 cursor-pointer">
+        <span className="font-bold text-[#281e80] flex items-center gap-1.5">
+          <CalendarClock className="w-3.5 h-3.5" />
+          {title}
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-slate-600">
+          Book now
+          <input type="checkbox" checked={bookNow} onChange={(e) => setBookNow(e.target.checked)} className="w-4 h-4 accent-[#5749e2]" />
+        </span>
+      </label>
+      {bookNow && children}
+    </div>
+  );
 }
 
 const digitsOf = (s: string) => s.replace(/\D/g, '');
@@ -28,19 +60,24 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
   clients,
   notes,
   assessments,
+  sessions,
   canSeeReports,
   onClose,
   onSuccess,
 }) => {
   const [search, setSearch] = useState('');
   const [existing, setExisting] = useState<Client | null>(null);
+  // Set when a new client was saved but the session could not be booked (e.g. the slot was just taken).
+  const [carryOver, setCarryOver] = useState<{ draft: SessionDraft; error: string } | null>(null);
   const searchResults = useMemo(() => clients.filter((c) => matchesPhone(c, search)).slice(0, 6), [clients, search]);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('+91 ');
   const [email, setEmail] = useState('');
   const [dob, setDob] = useState('');
-  const [assignedClinicianId, setAssignedClinicianId] = useState(clinicians[0]?.id || '');
+  const [draft, setDraft] = useState<SessionDraft>(() => newSessionDraft(clinicians[0]?.id || ''));
+  const [bookNow, setBookNow] = useState(true);
+  const assignedClinicianId = draft.clinicianId;
   const [isMinor, setIsMinor] = useState(false);
   const [guardianName, setGuardianName] = useState('');
   const [guardianContact, setGuardianContact] = useState('');
@@ -59,6 +96,10 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
       setError('Add a psychologist in Settings before creating client files.');
       return;
     }
+    if (bookNow && (draft.date < todayKey() || findConflict(sessions, draft))) {
+      setError('The chosen session time is not available. Please pick another date or time.');
+      return;
+    }
     setSaving(true);
     try {
       const emergencyPhoneClean = emergencyPhone.trim() === '+91' ? '' : emergencyPhone.trim();
@@ -75,6 +116,15 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
         emergency_contact_phone: emergencyPhoneClean || 'Not provided',
         consent_status: consentGranted ? 'granted' : 'pending',
       });
+      if (bookNow) {
+        try {
+          await submitSession(client.id, draft);
+        } catch (err) {
+          setCarryOver({ draft, error: `Client file created, but the session was not booked: ${(err as Error).message}` });
+          setExisting(client);
+          return;
+        }
+      }
       onSuccess(client);
     } catch (err) {
       setError((err as Error).message);
@@ -99,8 +149,15 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
             clinicians={clinicians}
             notes={notes}
             assessments={assessments}
+            sessions={sessions}
+            clients={clients}
+            initialDraft={carryOver?.draft}
+            initialError={carryOver?.error}
             canSeeReports={canSeeReports}
-            onBack={() => setExisting(null)}
+            onBack={() => {
+              setExisting(null);
+              setCarryOver(null);
+            }}
             onDone={onSuccess}
           />
         ) : (
@@ -215,10 +272,10 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Primary Clinician</label>
+              <label className="block font-semibold text-slate-700 mb-1">Psychologist</label>
               <select
                 value={assignedClinicianId}
-                onChange={(e) => setAssignedClinicianId(e.target.value)}
+                onChange={(e) => setDraft({ ...draft, clinicianId: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#5749e2] focus:outline-none"
               >
                 {clinicians.map((c) => (
@@ -229,6 +286,10 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
               </select>
             </div>
           </div>
+
+          <SessionSection title="First session" bookNow={bookNow} setBookNow={setBookNow}>
+            <SessionFields draft={draft} onChange={setDraft} clinicians={clinicians} sessions={sessions} clients={clients} showClinician={false} />
+          </SessionSection>
 
           {/* Minor Toggle & Guardian Fields */}
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
@@ -329,7 +390,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
               disabled={saving}
               className="px-5 py-2 bg-[#5749e2] hover:bg-[#4738cf] disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
             >
-              {saving ? 'Creating...' : 'Create Client File'}
+              {saving ? 'Saving...' : bookNow ? 'Create Client & Book Session' : 'Create Client File'}
             </button>
           </div>
         </form>
@@ -345,6 +406,10 @@ function ReturningClient({
   clinicians,
   notes,
   assessments,
+  sessions,
+  clients,
+  initialDraft,
+  initialError,
   canSeeReports,
   onBack,
   onDone,
@@ -353,15 +418,28 @@ function ReturningClient({
   clinicians: User[];
   notes: SessionNote[];
   assessments: Assessment[];
+  sessions: WebSession[];
+  clients: Client[];
+  initialDraft?: SessionDraft;
+  initialError?: string;
   canSeeReports: boolean;
   onBack: () => void;
   onDone: (client: Client) => void;
 }) {
-  const [clinicianId, setClinicianId] = useState(
-    clinicians.some((c) => c.id === client.assigned_clinician_id) ? client.assigned_clinician_id : clinicians[0]?.id || ''
+  const [draft, setDraft] = useState<SessionDraft>(
+    () =>
+      initialDraft ||
+      newSessionDraft(
+        clinicians.some((c) => c.id === client.assigned_clinician_id) ? client.assigned_clinician_id : clinicians[0]?.id || ''
+      )
   );
+  const [bookNow, setBookNow] = useState(true);
+  const clinicianId = draft.clinicianId;
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError || null);
+  const upcoming = sessions
+    .filter((s) => s.client_id === client.id && s.status === 'confirmed' && s.date >= todayKey())
+    .sort((a, b) => (a.date + a.start_time).localeCompare(b.date + b.start_time));
   const current = clinicians.find((c) => c.id === client.assigned_clinician_id);
   const reports = notes
     .filter((n) => n.client_id === client.id)
@@ -373,9 +451,13 @@ function ReturningClient({
 
   const handleAssign = async () => {
     setError(null);
+    if (bookNow && (draft.date < todayKey() || findConflict(sessions, draft))) {
+      setError('The chosen session time is not available. Please pick another date or time.');
+      return;
+    }
     setSaving(true);
     try {
-      onDone(await assignClient(client, clinicianId));
+      onDone(bookNow ? (await submitSession(client.id, draft)).client : await assignClient(client, clinicianId));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -400,7 +482,38 @@ function ReturningClient({
         <div className="text-slate-600">
           First visit {client.created_at} &bull; Last psychologist: <strong>{current?.name || 'Unassigned'}</strong>
         </div>
+        {upcoming.length > 0 && (
+          <div className="text-emerald-700 font-semibold">
+            Already booked: {upcoming.map((s) => `${formatSessionDate(s.date)} ${s.start_time}`).join(', ')}
+          </div>
+        )}
       </div>
+
+      <SessionSection title="Follow-up session" bookNow={bookNow} setBookNow={setBookNow}>
+        <SessionFields draft={draft} onChange={setDraft} clinicians={clinicians} sessions={sessions} clients={clients} />
+      </SessionSection>
+      {!bookNow && (
+        <div>
+          <label className="block font-semibold text-slate-700 mb-1">Assign to psychologist for this visit</label>
+          <select
+            value={clinicianId}
+            onChange={(e) => setDraft({ ...draft, clinicianId: e.target.value })}
+            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#5749e2] focus:outline-none"
+          >
+            {clinicians.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+                {c.id === client.assigned_clinician_id ? ' (current)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {clinicianId !== client.assigned_clinician_id && (
+        <p className="text-[11px] text-slate-500">
+          The client file and all earlier reports move to {clinicians.find((c) => c.id === clinicianId)?.name || 'this psychologist'}.
+        </p>
+      )}
 
       <div className="space-y-2">
         <h4 className="font-bold text-slate-800 flex items-center gap-1.5">
@@ -411,7 +524,7 @@ function ReturningClient({
           <p className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-900 flex items-start gap-2">
             <Lock className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span>
-              Report contents are visible only to the psychologist and the clinic owner. The psychologist you assign below will
+              Report contents are visible only to the psychologist and the clinic owner. The psychologist you choose for this visit will
               see all {reportCount} earlier report{reportCount === 1 ? '' : 's'} in the client file.
             </span>
           </p>
@@ -453,27 +566,6 @@ function ReturningClient({
         )}
       </div>
 
-      <div>
-        <label className="block font-semibold text-slate-700 mb-1">Assign to psychologist for this visit</label>
-        <select
-          value={clinicianId}
-          onChange={(e) => setClinicianId(e.target.value)}
-          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-[#5749e2] focus:outline-none"
-        >
-          {clinicians.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-              {c.id === client.assigned_clinician_id ? ' (current)' : ''}
-            </option>
-          ))}
-        </select>
-        {clinicianId !== client.assigned_clinician_id && (
-          <p className="text-[11px] text-slate-500 mt-1">
-            The client file and all earlier reports move to this psychologist.
-          </p>
-        )}
-      </div>
-
       {error && <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl">{error}</div>}
 
       <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
@@ -486,7 +578,7 @@ function ReturningClient({
           disabled={saving || !clinicianId}
           className="px-5 py-2 bg-[#5749e2] hover:bg-[#4738cf] disabled:opacity-50 text-white font-semibold rounded-xl shadow-sm"
         >
-          {saving ? 'Saving...' : 'Assign & Open File'}
+          {saving ? 'Saving...' : bookNow ? 'Book Session & Open File' : 'Assign & Open File'}
         </button>
       </div>
     </div>
