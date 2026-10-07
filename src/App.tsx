@@ -19,62 +19,20 @@ export default function App() {
   const [clients, setClients] = useState<Client[]>([]);
   const [sessionNotes, setSessionNotes] = useState<SessionNote[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Load data from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        setCurrentUser(user);
-        setCurrentView('dashboard');
-        // Fetch data from API if user is already logged in
-        fetchInitialData(user);
-      } catch (err) {
-        console.error('Failed to restore user session:', err);
-        localStorage.removeItem('currentUser');
-      }
+    if (!savedUser) return;
+    try {
+      setCurrentUser(JSON.parse(savedUser));
+      setCurrentView('dashboard');
+      fetchInitialData();
+    } catch {
+      localStorage.removeItem('currentUser');
     }
   }, []);
 
-  const fetchInitialData = async (user: User) => {
-    setIsLoading(true);
-    try {
-      const clientsResponse = await apiClient.getClients();
-      if (clientsResponse.success && clientsResponse.data) {
-        setClients(clientsResponse.data as Client[]);
-      }
-
-      const reportsResponse = await apiClient.getReports();
-      if (reportsResponse.success && reportsResponse.data) {
-        // Extract session notes and assessments from reports if available
-        setSessionNotes([]);
-        setAssessments([]);
-      }
-    } catch (err) {
-      console.error('Failed to fetch initial data:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    if (user.authToken) {
-      apiClient.setToken(user.authToken);
-    }
-    setCurrentView('dashboard');
-    fetchInitialData(user);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await apiClient.logout();
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
+  const resetSession = () => {
     setCurrentUser(null);
     apiClient.clearToken();
     localStorage.removeItem('currentUser');
@@ -84,63 +42,81 @@ export default function App() {
     setCurrentView('login');
   };
 
+  const fetchInitialData = async () => {
+    const response = await apiClient.getReports();
+    if (response.success && response.data) {
+      setClients(response.data.clients as Client[]);
+      setSessionNotes(response.data.notes as SessionNote[]);
+      setAssessments(response.data.assessments as Assessment[]);
+    } else if (response.error === 'Not authenticated') {
+      resetSession();
+    } else {
+      alert(response.error || 'Failed to load data');
+    }
+  };
+
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify({ ...user, authToken: undefined }));
+    setCurrentView('dashboard');
+    fetchInitialData();
+  };
+
+  const handleLogout = async () => {
+    await apiClient.logout();
+    resetSession();
+  };
+
   const handleAddClient = async (client: Client) => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.createClient(client);
-      if (response.success && response.data) {
-        setClients([...clients, response.data as Client]);
-      }
-    } catch (err) {
-      console.error('Failed to add client:', err);
-      setClients([...clients, client]);
-    } finally {
-      setIsLoading(false);
+    const response = await apiClient.createClient(client);
+    if (response.success && response.data) {
+      setClients(prev => [...prev, response.data as Client]);
+    } else {
+      alert(response.error || 'Failed to add client');
     }
   };
 
   const handleUpdateClient = async (updatedClient: Client) => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.updateClient(updatedClient.id, updatedClient);
-      if (response.success) {
-        setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
-      }
-    } catch (err) {
-      console.error('Failed to update client:', err);
-      setClients(clients.map((c: Client) => c.id === updatedClient.id ? updatedClient : c));
-    } finally {
-      setIsLoading(false);
+    const response = await apiClient.updateClient(updatedClient.id, updatedClient);
+    if (response.success && response.data) {
+      const saved = response.data as Client;
+      setClients(prev => prev.map(c => (c.id === saved.id ? saved : c)));
+      setSelectedClient(saved);
+    } else {
+      alert(response.error || 'Failed to update client');
     }
   };
 
   const handleAddSessionNote = async (note: SessionNote) => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.createSessionNote(note.client_id, note);
-      if (response.success && response.data) {
-        setSessionNotes([...sessionNotes, response.data as SessionNote]);
-      }
-    } catch (err) {
-      console.error('Failed to add session note:', err);
-      setSessionNotes([...sessionNotes, note]);
-    } finally {
-      setIsLoading(false);
+    const response = await apiClient.createSessionNote(note.client_id, note);
+    if (response.success && response.data) {
+      const saved = response.data as SessionNote;
+      setSessionNotes(prev => [...prev, saved]);
+      setSelectedNote(saved);
+      setCurrentView('session-note');
+    } else {
+      alert(response.error || 'Failed to add session note');
+    }
+  };
+
+  const handleSaveSessionNote = async (note: SessionNote) => {
+    const response = await apiClient.updateSessionNote(note.client_id, note.id, note);
+    if (response.success && response.data) {
+      const saved = response.data as SessionNote;
+      setSessionNotes(prev => prev.map(n => (n.id === saved.id ? saved : n)));
+      setSelectedNote(null);
+      setCurrentView(selectedClient ? 'client-detail' : 'dashboard');
+    } else {
+      alert(response.error || 'Failed to save session note');
     }
   };
 
   const handleAddAssessment = async (assessment: Assessment) => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.sendAssessment(assessment.client_id, assessment);
-      if (response.success && response.data) {
-        setAssessments([...assessments, response.data as Assessment]);
-      }
-    } catch (err) {
-      console.error('Failed to add assessment:', err);
-      setAssessments([...assessments, assessment]);
-    } finally {
-      setIsLoading(false);
+    const response = await apiClient.sendAssessment(assessment.client_id, assessment);
+    if (response.success && response.data) {
+      setAssessments(prev => [...prev, response.data as Assessment]);
+    } else {
+      alert(response.error || 'Failed to add assessment');
     }
   };
 
@@ -154,13 +130,9 @@ export default function App() {
     setCurrentView('session-note');
   };
 
-  const handleBackToClients = () => {
-    setSelectedClient(null);
-    setCurrentView('clients');
-  };
-
-  const handleBackToDashboard = () => {
-    setCurrentView('dashboard');
+  const handleCloseNote = () => {
+    setSelectedNote(null);
+    setCurrentView(selectedClient ? 'client-detail' : 'dashboard');
   };
 
   if (!currentUser) {
@@ -196,9 +168,12 @@ export default function App() {
           <ClientDetailView
             client={selectedClient}
             currentUser={currentUser}
-            sessionNotes={sessionNotes.filter((n: SessionNote) => n.client_id === selectedClient.id)}
-            assessments={assessments.filter((a: Assessment) => a.client_id === selectedClient.id)}
-            onBack={handleBackToClients}
+            sessionNotes={sessionNotes.filter(n => n.client_id === selectedClient.id)}
+            assessments={assessments.filter(a => a.client_id === selectedClient.id)}
+            onBack={() => {
+              setSelectedClient(null);
+              setCurrentView('clients');
+            }}
             onAddNote={handleAddSessionNote}
             onEditNote={handleEditSessionNote}
             onAddAssessment={handleAddAssessment}
@@ -207,11 +182,7 @@ export default function App() {
         )}
 
         {currentView === 'session-note' && selectedNote && (
-          <SessionNoteEditor
-            note={selectedNote}
-            onClose={handleBackToDashboard}
-            onSave={() => handleBackToDashboard()}
-          />
+          <SessionNoteEditor note={selectedNote} onClose={handleCloseNote} onSave={handleSaveSessionNote} />
         )}
 
         {currentView === 'reports' && (
@@ -219,7 +190,7 @@ export default function App() {
             clients={clients}
             sessionNotes={sessionNotes}
             assessments={assessments}
-            onBack={handleBackToDashboard}
+            onBack={() => setCurrentView('dashboard')}
           />
         )}
       </main>

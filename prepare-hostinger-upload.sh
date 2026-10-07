@@ -16,7 +16,8 @@ trap "rm -rf $TEMP_DIR" EXIT
 
 # Copy build files
 mkdir -p "$TEMP_DIR/mindledger"
-cp -r dist/* "$TEMP_DIR/mindledger/"
+cp -r dist/. "$TEMP_DIR/mindledger/"
+rm -f "$TEMP_DIR/mindledger/server.cjs" "$TEMP_DIR/mindledger/server.cjs.map"
 
 # Copy .htaccess
 cp public/.htaccess "$TEMP_DIR/mindledger/.htaccess"

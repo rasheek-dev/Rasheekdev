@@ -5,15 +5,22 @@ import { X } from 'lucide-react';
 interface SessionNoteEditorProps {
   note: SessionNote;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (note: SessionNote) => void;
 }
 
 export default function SessionNoteEditor({ note, onClose, onSave }: SessionNoteEditorProps) {
   const [content, setContent] = useState(note.content);
   const [templateType, setTemplateType] = useState(note.template_type);
+  const [privateNotes, setPrivateNotes] = useState(note.private_notes || '');
 
   const handleSave = () => {
-    onSave();
+    onSave({
+      ...note,
+      template_type: templateType,
+      content,
+      private_notes: privateNotes,
+      updated_at: new Date().toISOString(),
+    });
   };
 
   return (
@@ -36,7 +43,7 @@ export default function SessionNoteEditor({ note, onClose, onSave }: SessionNote
             <label className="block text-sm font-medium text-gray-700 mb-2">Note Template</label>
             <select
               value={templateType}
-              onChange={(e) => setTemplateType(e.target.value as any)}
+              onChange={(e) => setTemplateType(e.target.value as SessionNote['template_type'])}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="SOAP">SOAP (Subjective, Objective, Assessment, Plan)</option>
@@ -134,8 +141,8 @@ export default function SessionNoteEditor({ note, onClose, onSave }: SessionNote
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Private Notes (clinician only)</label>
               <textarea
-                value={note.private_notes || ''}
-                onChange={(e) => {}}
+                value={privateNotes}
+                onChange={(e) => setPrivateNotes(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 h-20"
                 placeholder="These notes are only visible to you..."
               />

@@ -27,6 +27,7 @@ mkdir temp-mindledger\mindledger
 REM Copy files
 xcopy /E /I dist temp-mindledger\mindledger
 copy public\.htaccess temp-mindledger\mindledger\.htaccess
+del /q temp-mindledger\mindledger\server.cjs temp-mindledger\mindledger\server.cjs.map 2>nul
 
 REM Create zip file (requires 7-Zip or similar)
 REM This uses PowerShell which is available on Windows 10+

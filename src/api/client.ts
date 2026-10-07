@@ -1,57 +1,41 @@
-// API client to communicate with Mentra PHP backend
+const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.BASE_URL}api/index.php`;
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3000/api';
-const BASE_PATH = process.env.VITE_BASE_PATH || '/mindledger';
-
-export interface ApiResponse<T> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-  message?: string;
 }
 
 class ApiClient {
-  private token: string | null = null;
+  private token: string | null = localStorage.getItem('authToken');
 
-  constructor() {
-    this.token = localStorage.getItem('authToken');
-  }
-
-  private getHeaders(): HeadersInit {
-    return {
-      'Content-Type': 'application/json',
-      ...(this.token && { 'Authorization': `Bearer ${this.token}` }),
-    };
-  }
-
-  async request<T>(
-    method: string,
-    endpoint: string,
-    body?: any
-  ): Promise<ApiResponse<T>> {
+  async request<T = unknown>(method: string, path: string, body?: unknown): Promise<ApiResponse<T>> {
+    const [route, query] = path.split('?');
+    const url = `${API_URL}?path=${encodeURIComponent(route)}${query ? `&${query}` : ''}`;
     try {
-      const url = `${API_URL}${endpoint}`;
-      const options: RequestInit = {
+      const response = await fetch(url, {
         method,
-        headers: this.getHeaders(),
-      };
-
-      if (body) {
-        options.body = JSON.stringify(body);
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.token ? { 'X-Auth-Token': this.token } : {}),
+        },
+        body: body === undefined || method === 'GET' ? undefined : JSON.stringify(body),
+      });
+      const text = await response.text();
+      let data: ApiResponse<T>;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        return { success: false, error: `Server returned an invalid response (HTTP ${response.status})` };
       }
-
-      const response = await fetch(url, options);
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'API request failed');
+        return { success: false, error: data.error || `Request failed (HTTP ${response.status})` };
       }
-
       return data;
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? `Cannot reach server: ${error.message}` : 'Cannot reach server',
       };
     }
   }
@@ -66,66 +50,56 @@ class ApiClient {
     localStorage.removeItem('authToken');
   }
 
-  // Auth endpoints
-  async login(email: string, password: string) {
+  login(email: string, password: string) {
     return this.request('POST', '/auth/login', { email, password });
   }
 
-  async logout() {
+  logout() {
     return this.request('POST', '/auth/logout', {});
   }
 
-  // Client endpoints
-  async getClients() {
-    return this.request('GET', '/clients', {});
+  getClients() {
+    return this.request('GET', '/clients');
   }
 
-  async createClient(client: any) {
+  createClient(client: unknown) {
     return this.request('POST', '/clients', client);
   }
 
-  async updateClient(clientId: string, updates: any) {
+  updateClient(clientId: string, updates: unknown) {
     return this.request('PUT', `/clients/${clientId}`, updates);
   }
 
-  async getClient(clientId: string) {
-    return this.request('GET', `/clients/${clientId}`, {});
+  getClient(clientId: string) {
+    return this.request('GET', `/clients/${clientId}`);
   }
 
-  // Session notes endpoints
-  async getSessionNotes(clientId: string) {
-    return this.request('GET', `/clients/${clientId}/notes`, {});
+  getSessionNotes(clientId: string) {
+    return this.request('GET', `/clients/${clientId}/notes`);
   }
 
-  async createSessionNote(clientId: string, note: any) {
+  createSessionNote(clientId: string, note: unknown) {
     return this.request('POST', `/clients/${clientId}/notes`, note);
   }
 
-  async updateSessionNote(clientId: string, noteId: string, updates: any) {
+  updateSessionNote(clientId: string, noteId: string, updates: unknown) {
     return this.request('PUT', `/clients/${clientId}/notes/${noteId}`, updates);
   }
 
-  // Assessment endpoints
-  async sendAssessment(clientId: string, assessment: any) {
+  sendAssessment(clientId: string, assessment: unknown) {
     return this.request('POST', `/clients/${clientId}/assessments`, assessment);
   }
 
-  async getAssessments(clientId: string) {
-    return this.request('GET', `/clients/${clientId}/assessments`, {});
+  getAssessments(clientId: string) {
+    return this.request('GET', `/clients/${clientId}/assessments`);
   }
 
-  async updateAssessmentResponse(assessmentId: string, responses: any) {
+  updateAssessmentResponse(assessmentId: string, responses: unknown) {
     return this.request('PUT', `/assessments/${assessmentId}/responses`, responses);
   }
 
-  // Reports endpoints
-  async getReports(filters?: any) {
-    const query = filters ? `?${new URLSearchParams(filters).toString()}` : '';
-    return this.request('GET', `/reports${query}`, {});
-  }
-
-  async exportReport(reportId: string, format: 'pdf' | 'csv') {
-    return this.request('GET', `/reports/${reportId}/export?format=${format}`, {});
+  getReports() {
+    return this.request<{ clients: unknown[]; notes: unknown[]; assessments: unknown[] }>('GET', '/reports');
   }
 }
 
