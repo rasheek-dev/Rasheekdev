@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #5749e2;
+  --color-primary-hover: #4738cf;
+  --color-primary-50: #f4f3fe;
+  --color-primary-100: #e8e6fd;
+  --color-primary-200: #d4d0fb;
+  --color-primary-500: #5749e2;
+  --color-primary-600: #4738cf;
+  --color-primary-700: #392cb3;
+
+  --color-secondary: #fd2a83;
+  --color-secondary-hover: #e0166f;
+  --color-secondary-50: #fdf0f6;
+  --color-secondary-100: #fce2ee;
+  --color-secondary-200: #f9b8d6;
+  --color-secondary-500: #fd2a83;
+  --color-secondary-600: #e0166f;
+  --color-secondary-700: #be0c58;
+}
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --primary: #5749e2;
+    --primary-hover: #4738cf;
+    --primary-light: #f4f3fe;
+    --secondary: #fd2a83;
+    --secondary-hover: #e0166f;
+    --secondary-light: #fdf0f6;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: #1E293B;
+    background-color: #F8FAF9;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbars for high-density clinic tables & schedule */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
