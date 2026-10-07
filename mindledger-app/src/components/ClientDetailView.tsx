@@ -226,6 +226,8 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                 <span>
                   {client.date_of_birth
                     ? `DOB: ${client.date_of_birth}`
+                    : client.age_range
+                    ? `Age: ${client.age_range}`
                     : client.age_at_intake
                     ? `Age ${client.age_at_intake} at first booking`
                     : 'DOB: not recorded'}
@@ -316,6 +318,14 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                           <div className="font-bold text-slate-900">
                             {formatSessionDate(sess.date)}, {sess.start_time}&ndash;{sess.end_time}
                             {cancelled && <span className="ml-2 text-red-600 font-semibold">Cancelled</span>}
+                            {!cancelled && sess.payment_verified === false && !userIsPsychologist && (
+                              <span
+                                className="ml-2 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded"
+                                title="Not checked against Razorpay. Add the Razorpay key secret to mindledger/api/config.php to verify payments automatically."
+                              >
+                                Payment not verified
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-500">
                             {psych?.name || 'Psychologist'} &bull; {sess.booking_code}

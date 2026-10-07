@@ -38,14 +38,20 @@ PHP 8.0 or newer is required (hPanel → **Advanced → PHP Configuration**). Ho
 
 ## Connection to the Mentra website
 
-When the Mentra website's `psychologists` and `bookings` tables are in the same database, MindLedger syncs with it every time someone opens it:
+The Mentra website has no database. MindLedger connects to it in two ways:
 
-- **Psychologists** listed on the website get a MindLedger psychologist account automatically, marked **From website** in Clinic Settings. They show **Login not set up** until you click **Set Password**. Their login is the email from the website. A psychologist with no email on the website gets an address ending in `@psychologist.mentracare.in`, shown in Settings. Name, phone, photo and registration number follow the website.
-- **Bookings** that are paid or confirmed become client files, assigned to the psychologist who was booked. Unpaid or abandoned bookings are ignored until they are paid. Website clients start with DPDP consent **pending**; record consent at the first session.
-- **Follow-ups**: a client who books again is matched by phone number (or email) to their existing file, so all earlier reports stay together. If the follow-up is with a different psychologist, the file moves to that psychologist, who then sees the earlier reports. The previous psychologist keeps access only to the reports they wrote.
-- **Sessions** appear under **Upcoming Website Sessions** on the dashboard and in the client's file, with the Google Meet link and a **Write Report** button that links the report to that session. Cancelled bookings show as cancelled.
+- **Psychologists**: MindLedger reads `public_html/psychologists.js`, the file you already edit to list psychologists. Every active psychologist there gets a MindLedger psychologist account, marked **From website** in Clinic Settings, showing **Login not set up** until you click **Set Password**.
+  - The login email is built from the name, e.g. `anjali.nair@psychologist.mentracare.in`. To use a real address, add a line such as `email: "anjali@mentracare.in",` to that psychologist in `psychologists.js`.
+  - Name, title, photo and registration follow the file. Setting `active: false` stops new accounts but does not delete existing ones; remove someone in Clinic Settings.
+- **Bookings**: when a client completes a booking on the website, the booking page (`find-a-psychologist/find.js`) also sends it to MindLedger. MindLedger then:
+  - creates the client file (name, phone, email, age range, concerns), assigned to the booked psychologist;
+  - matches a **returning client** by phone or email to their existing file, so all earlier reports are there. If the follow-up is with a different psychologist, the file moves to them;
+  - adds the session to the dashboard (**Upcoming Website Sessions**) and the client file, with **Write Report**.
 
-The Mentra website must use the same database. Its `public_html/config/Database.php` and `public_html/config/Config.php` need `u180950667_mentra` as both the database name and the user, plus the database password.
+  This never blocks or slows the booking itself. Website clients start with DPDP consent **pending**; record consent at the first session.
+- **Payment check (optional)**: add your Razorpay **Key Secret** to `razorpay_key_secret` in `mindledger/api/config.php`. Paid bookings are then checked against Razorpay; until then sessions show **Payment not verified** to the owner and front desk.
+
+To switch the link off, add `MINDLEDGER_URL: "",` to the website's `config.js`. If MindLedger lives in a folder other than `/mindledger/`, set `MINDLEDGER_URL` to that folder instead.
 
 ## Everyday use
 

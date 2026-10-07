@@ -63,6 +63,7 @@ export interface Client {
   source?: 'website';
   intake_concerns?: string;
   age_at_intake?: number | null;
+  age_range?: string;
   last_booking_at?: string;
 }
 
@@ -79,6 +80,8 @@ export interface WebSession {
   payment_status: string;
   concerns: string;
   meet_url: string;
+  payment_id?: string;
+  payment_verified?: boolean;
   source: 'website';
 }
 

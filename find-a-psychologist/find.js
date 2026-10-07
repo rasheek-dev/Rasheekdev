@@ -631,6 +631,17 @@
     return Object.assign({ proId: p.id, proName: p.name, date: ist.date, time: ist.time, startISO: start.toISOString(), durationMin: p.mins, mode: "Online",
       name: S.details.name.trim(), phone: ph.e164, country: ph.iso, email: S.details.email.trim(), ageRange: S.details.age, lang: "en", page: location.href, source: SOURCE, coupon: S.coupon.applied ? S.coupon.code : "" }, ATTR);
   }
+  // Copies a completed booking into MindLedger (client file + session). Never blocks or fails the booking.
+  function notifyMindLedger(pl, ref, paymentId, rp) {
+    const base = CFG.MINDLEDGER_URL === undefined ? "/mindledger/" : CFG.MINDLEDGER_URL;
+    if (!base) return;
+    try {
+      fetch(String(base).replace(/\/?$/, "/") + "api/index.php?path=public/website-booking", {
+        method: "POST", keepalive: true, headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({}, pl, { ref: ref, paymentId: paymentId, concerns: S.concerns, who: S.who }, rp || {}))
+      }).catch(function () {});
+    } catch (e) {}
+  }
   const setPayErr = html => { const el = $("#payerr"); if (!el) return; el.hidden = !html; el.innerHTML = html || ""; };
   async function pay() {
     if (paying) return; paying = true;
@@ -641,7 +652,7 @@
     const p = proOf(S.chosenId), pr = price(), pl = bookingPayload(), start = new Date(S.slotISO), key = p.id + "|" + S.slotISO + "|" + pl.coupon;
     const info = { description: p.name + " · " + longDate(localKey(start)) + ", " + fmtTime(start), name: pl.name, email: pl.email, phone: pl.phone, amountText: money(pr.total) };
     const retime = '<button type="button" class="link" data-act="retime">Choose another time</button>';
-    let ref = null, paymentId = "";
+    let ref = null, paymentId = "", rp = null, demo = false;
     track("PaymentStarted");
     try {
       if (REQUIRE_PAYMENT && API) {
@@ -671,8 +682,10 @@
           }
           if (!jc || !jc.ok) { PAY.pending = null; return done(jc && jc.reason === "conflict" ? "Your payment went through (ID " + esc(pr2.razorpay_payment_id) + ") but this time was taken just before. Please contact support with this ID and we'll rebook you or refund you." : "Your payment went through (ID " + esc(pr2.razorpay_payment_id) + ") but we couldn't finish your booking on this screen. Please don't pay again. We'll confirm on WhatsApp shortly."); }
           ref = jc.ref || order.ref; paymentId = jc.paymentId || pr2.razorpay_payment_id; PAY.pending = null;
+          rp = { razorpay_order_id: pr2.razorpay_order_id, razorpay_payment_id: pr2.razorpay_payment_id, razorpay_signature: pr2.razorpay_signature };
         }
       } else if (REQUIRE_PAYMENT) {                // preview without a backend
+        demo = true;
         if (pr.total > 0) { label("Opening demo payment…"); let r2; try { r2 = await demoCheckout(info); } catch (err) { return done("Payment was not completed. You can try again when you're ready."); } paymentId = r2.razorpay_payment_id; } else paymentId = "FREE-COUPON";
         ref = "MNT-" + Math.floor(10000 + Math.random() * 90000);
         try { const arr = JSON.parse(localStorage.getItem("mentra_demo_booked") || "[]"); arr.push({ id: p.id, s: start.getTime(), e: start.getTime() + p.mins * 60000 }); localStorage.setItem("mentra_demo_booked", JSON.stringify(arr)); } catch (e) {}
@@ -683,6 +696,7 @@
     } catch (err) { return done("We couldn't complete this step. Please check your connection and try again."); }
     S.booking = { ref: ref, paymentId: paymentId, proId: p.id, startISO: S.slotISO, format: "online", total: pr.total, dateLabel: longDate(localKey(start)), timeLabel: fmtTime(start) + " " + tzLabel(), name: pl.name };
     S.matchIds = S.matchIds; save(); delete busyCache[p.id]; delete slotCache[p.id]; paying = false;
+    if (!demo) notifyMindLedger(pl, ref, paymentId, rp);
     track("BookingConfirmed", { value: pr.total });
     go("done", { replace: true });
   }
