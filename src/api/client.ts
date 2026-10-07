@@ -1,6 +1,7 @@
 // API client to communicate with Mentra PHP backend
 
 const API_URL = process.env.VITE_API_URL || 'http://localhost:3000/api';
+const BASE_PATH = process.env.VITE_BASE_PATH || '/mindledger';
 
 export interface ApiResponse<T> {
   success: boolean;

@@ -1,0 +1,73 @@
+MINDLEDGER LITE - HOSTINGER UPLOAD FILE LIST
+============================================
+
+Location: /public_html/mindledger/
+
+FILES TO UPLOAD (from local dist/ folder):
+==========================================
+
+REQUIRED:
+  ✓ index.html
+
+CSS FILES (from dist/assets/):
+  ✓ index-*.css
+
+JAVASCRIPT FILES (from dist/assets/):
+  ✓ index-*.js
+
+CONFIGURATION (from local public/ folder):
+  ✓ .htaccess
+
+TOTAL SIZE: ~82 KB (compressed) or ~300 KB (uncompressed)
+
+STRUCTURE AFTER UPLOAD:
+======================
+
+/public_html/
+└── mindledger/
+    ├── index.html
+    ├── .htaccess
+    └── assets/
+        ├── index-[hash].css
+        └── index-[hash].js
+
+UPLOAD STEPS:
+=============
+
+Option 1: Use Upload Package (Easiest)
+  1. Run: npm run build
+  2. Run: ./prepare-hostinger-upload.sh (Mac/Linux) or prepare-hostinger-upload.bat (Windows)
+  3. Upload: mindledger-hostinger-upload.zip to /public_html/
+  4. Extract in Hostinger File Manager
+  5. Done!
+
+Option 2: Manual Upload
+  1. Create /public_html/mindledger/ folder
+  2. Upload index.html from dist/
+  3. Upload assets/ folder with CSS and JS files
+  4. Upload .htaccess from public/
+  5. Done!
+
+FILES NOT TO UPLOAD:
+====================
+  ✗ node_modules/
+  ✗ src/
+  ✗ tsconfig.json
+  ✗ vite.config.ts
+  ✗ package.json
+  ✗ .env files
+  ✗ git files
+
+IMPORTANT:
+==========
+- .htaccess is HIDDEN by default in File Manager
+- Show hidden files in Hostinger File Manager (icon in toolbar)
+- .htaccess enables client-side routing (required!)
+- Without it, page refresh on routes will show 404
+
+ACCESS URL:
+===========
+https://yourdomain.com/mindledger/
+
+UPDATED:
+2026-10-07
