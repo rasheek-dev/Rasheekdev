@@ -7,6 +7,7 @@ import ClientDetailView from './components/ClientDetailView';
 import SessionNoteEditor from './components/SessionNoteEditor';
 import ReportsView from './components/ReportsView';
 import Navigation from './components/Navigation';
+import { apiClient } from './api/client';
 
 type View = 'login' | 'dashboard' | 'clients' | 'client-detail' | 'session-note' | 'reports';
 
@@ -18,76 +19,129 @@ export default function App() {
   const [clients, setClients] = useState<Client[]>([]);
   const [sessionNotes, setSessionNotes] = useState<SessionNote[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load data from localStorage
+  // Load data from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
-      setCurrentView('dashboard');
-    }
-
-    const savedClients = localStorage.getItem('clients');
-    if (savedClients) {
-      setClients(JSON.parse(savedClients));
-    }
-
-    const savedNotes = localStorage.getItem('sessionNotes');
-    if (savedNotes) {
-      setSessionNotes(JSON.parse(savedNotes));
-    }
-
-    const savedAssessments = localStorage.getItem('assessments');
-    if (savedAssessments) {
-      setAssessments(JSON.parse(savedAssessments));
+      try {
+        const user = JSON.parse(savedUser);
+        setCurrentUser(user);
+        setCurrentView('dashboard');
+        // Fetch data from API if user is already logged in
+        fetchInitialData(user);
+      } catch (err) {
+        console.error('Failed to restore user session:', err);
+        localStorage.removeItem('currentUser');
+      }
     }
   }, []);
 
-  // Save data to localStorage
-  useEffect(() => {
-    if (clients.length > 0) {
-      localStorage.setItem('clients', JSON.stringify(clients));
-    }
-  }, [clients]);
+  const fetchInitialData = async (user: User) => {
+    setIsLoading(true);
+    try {
+      const clientsResponse = await apiClient.getClients();
+      if (clientsResponse.success && clientsResponse.data) {
+        setClients(clientsResponse.data);
+      }
 
-  useEffect(() => {
-    if (sessionNotes.length > 0) {
-      localStorage.setItem('sessionNotes', JSON.stringify(sessionNotes));
+      const reportsResponse = await apiClient.getReports();
+      if (reportsResponse.success && reportsResponse.data) {
+        // Extract session notes and assessments from reports if available
+        setSessionNotes([]);
+        setAssessments([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch initial data:', err);
+    } finally {
+      setIsLoading(false);
     }
-  }, [sessionNotes]);
-
-  useEffect(() => {
-    if (assessments.length > 0) {
-      localStorage.setItem('assessments', JSON.stringify(assessments));
-    }
-  }, [assessments]);
+  };
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     localStorage.setItem('currentUser', JSON.stringify(user));
+    if (user.authToken) {
+      apiClient.setToken(user.authToken);
+    }
     setCurrentView('dashboard');
+    fetchInitialData(user);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiClient.logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     setCurrentUser(null);
+    apiClient.clearToken();
     localStorage.removeItem('currentUser');
+    setClients([]);
+    setSessionNotes([]);
+    setAssessments([]);
     setCurrentView('login');
   };
 
-  const handleAddClient = (client: Client) => {
-    setClients([...clients, client]);
+  const handleAddClient = async (client: Client) => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.createClient(client);
+      if (response.success && response.data) {
+        setClients([...clients, response.data]);
+      }
+    } catch (err) {
+      console.error('Failed to add client:', err);
+      setClients([...clients, client]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleUpdateClient = (updatedClient: Client) => {
-    setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+  const handleUpdateClient = async (updatedClient: Client) => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.updateClient(updatedClient.id, updatedClient);
+      if (response.success) {
+        setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+      }
+    } catch (err) {
+      console.error('Failed to update client:', err);
+      setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleAddSessionNote = (note: SessionNote) => {
-    setSessionNotes([...sessionNotes, note]);
+  const handleAddSessionNote = async (note: SessionNote) => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.createSessionNote(note.client_id, note);
+      if (response.success && response.data) {
+        setSessionNotes([...sessionNotes, response.data]);
+      }
+    } catch (err) {
+      console.error('Failed to add session note:', err);
+      setSessionNotes([...sessionNotes, note]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleAddAssessment = (assessment: Assessment) => {
-    setAssessments([...assessments, assessment]);
+  const handleAddAssessment = async (assessment: Assessment) => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.sendAssessment(assessment.client_id, assessment);
+      if (response.success && response.data) {
+        setAssessments([...assessments, response.data]);
+      }
+    } catch (err) {
+      console.error('Failed to add assessment:', err);
+      setAssessments([...assessments, assessment]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleViewClientDetail = (client: Client) => {

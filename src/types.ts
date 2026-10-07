@@ -18,6 +18,7 @@ export interface User {
   specialties?: string[];
   avatar_url?: string;
   color?: string;
+  authToken?: string;
 }
 
 export interface Clinic {

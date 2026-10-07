@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User } from '../types';
 import { Lock, Mail } from 'lucide-react';
+import { apiClient } from '../api/client';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -18,24 +19,33 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setError('');
 
     try {
-      // Simulate login - in production, call your backend
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await apiClient.login(email, password);
 
-      // Create a demo user
-      const user: User = {
-        id: 'user_' + Math.random().toString(36).substr(2, 9),
-        name: 'Dr. Sarah Johnson',
-        email: email,
-        phone: '+1234567890',
-        role: 'clinician',
-        clinic_id: 'clinic_1',
-        specialties: ['Depression', 'Anxiety', 'PTSD'],
-        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop'
-      };
+      if (response.success && response.data) {
+        const user = response.data as any;
+        if (user.token) {
+          apiClient.setToken(user.token);
+        }
 
-      onLogin(user);
+        const mappedUser: User = {
+          id: user.id || 'user_' + Math.random().toString(36).substr(2, 9),
+          name: user.name || user.email,
+          email: user.email,
+          phone: user.phone || '',
+          role: user.role || 'clinician',
+          clinic_id: user.clinic_id || 'clinic_1',
+          specialties: user.specialties || [],
+          avatar_url: user.avatar_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
+          authToken: user.token
+        };
+
+        onLogin(mappedUser);
+      } else {
+        setError(response.error || 'Login failed. Please try again.');
+      }
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError('Login failed. Please check your connection and try again.');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
