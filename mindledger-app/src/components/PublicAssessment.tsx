@@ -24,23 +24,18 @@ export const PublicAssessment: React.FC<PublicAssessmentProps> = ({ token }) => 
   useEffect(() => {
     getPublicAssessment(token)
       .then((data) => {
-        if (!data) {
-          setUnavailable('This questionnaire link is not valid, or it has already been submitted.');
-          return;
-        }
-        if (data.isExpired) {
-          setUnavailable('This questionnaire link has expired. Please ask your psychologist for a new link.');
-          return;
-        }
-        if (data.isCompleted) {
-          setIsCompleted(true);
-        }
         setDefinition(data.definition);
-        setAssessmentType(data.assessment.type);
+        setAssessmentType(data.type);
         setClientFirstName(data.clientName);
         setClinicName(data.clinicName);
       })
-      .catch(() => setUnavailable('This questionnaire link is not valid, or it has already been submitted.'))
+      .catch((err) =>
+        setUnavailable(
+          ['unavailable', 'expired'].includes(err.code)
+            ? err.message
+            : 'This questionnaire could not be opened. Please check your internet connection or ask your psychologist for a new link.'
+        )
+      )
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -71,10 +66,10 @@ export const PublicAssessment: React.FC<PublicAssessmentProps> = ({ token }) => 
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await submitPublicAssessment(token, assessmentType, responses);
+      await submitPublicAssessment(token, responses);
       setIsCompleted(true);
-    } catch {
-      setSubmitError('Your answers could not be submitted. The link may have expired or already been used. Please check your internet connection and try again.');
+    } catch (err) {
+      setSubmitError((err as Error).message || 'Your answers could not be submitted. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

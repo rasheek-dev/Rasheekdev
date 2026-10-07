@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ShieldCheck, LogOut, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Clinic, User, isPsychologist, isCoordinator, isOwner } from './types';
-import { isConfigured, config } from './lib/firebase';
 import * as api from './lib/api';
 import type { ClinicData, SessionState } from './lib/api';
 
@@ -78,17 +77,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  if (!isConfigured) {
-    return (
-      <FullScreenMessage title="MindLedger is not connected yet">
-        <p>
-          Open <code className="bg-slate-100 px-1 rounded">config.js</code> in this folder on your server and paste your
-          Firebase web app settings into it, then reload this page.
-        </p>
-      </FullScreenMessage>
-    );
-  }
-
   if (path.startsWith('assessment/')) {
     return <PublicAssessment token={path.slice('assessment/'.length)} />;
   }
@@ -108,35 +96,29 @@ function ClinicApp({ path, setPath }: { path: string; setPath: (p: string) => vo
 
   if (!session) return <Spinner label="Opening MindLedger..." />;
 
-  if (session.status === 'removed') {
+  if (session.status === 'error') {
     return (
-      <FullScreenMessage title="Your access has been removed">
-        <p>
-          The account <strong>{session.email}</strong> is no longer part of a clinic on MindLedger. Please contact your clinic
-          owner if you think this is a mistake.
-        </p>
-        <button
-          onClick={() => api.signOut()}
-          className="mt-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          <span>Sign out</span>
+      <FullScreenMessage title={session.code === 'db_error' || session.code === 'not_configured' ? 'Database not connected' : 'MindLedger is unavailable'}>
+        <p>{session.message}</p>
+        {(session.code === 'db_error' || session.code === 'not_configured') && (
+          <p>
+            Open <code className="bg-slate-100 px-1 rounded">public_html/mindledger/api/config.php</code> in Hostinger File
+            Manager and check the database name, username and password against hPanel &rarr; Databases &rarr; Management.
+          </p>
+        )}
+        <button onClick={() => api.checkStatus()} className="mt-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold">
+          Try again
         </button>
       </FullScreenMessage>
     );
   }
 
+  if (session.status === 'setup') {
+    return <SignupPage onSignupSuccess={() => go('dashboard')} />;
+  }
+
   if (session.status === 'signed-out') {
-    if (path === 'signup' && config?.allowSignup !== false) {
-      return <SignupPage onSignupSuccess={() => go('dashboard')} onNavigateToLogin={() => go('login')} />;
-    }
-    return (
-      <LoginPage
-        allowSignup={config?.allowSignup !== false}
-        onLoginSuccess={() => go('dashboard')}
-        onNavigateToSignup={() => go('signup')}
-      />
-    );
+    return <LoginPage onLoginSuccess={() => go('dashboard')} />;
   }
 
   return <Workspace key={session.user.id} user={session.user} initialClinic={session.clinic} path={path} go={go} />;

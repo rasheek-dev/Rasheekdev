@@ -15,12 +15,10 @@ import { signUpClinic } from '../lib/api';
 
 interface SignupPageProps {
   onSignupSuccess: () => void;
-  onNavigateToLogin: () => void;
 }
 
 export const SignupPage: React.FC<SignupPageProps> = ({
   onSignupSuccess,
-  onNavigateToLogin,
 }) => {
   const [clinicName, setClinicName] = useState('');
   const [ownerName, setOwnerName] = useState('');
@@ -46,8 +44,8 @@ export const SignupPage: React.FC<SignupPageProps> = ({
       setErrorMessage('Please enter a valid work or professional email address.');
       return;
     }
-    if (!password || password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters long.');
+    if (!password || password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters long.');
       return;
     }
 
@@ -91,10 +89,10 @@ export const SignupPage: React.FC<SignupPageProps> = ({
         </div>
 
         <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900">
-          Register a Brand-New Clinic
+          Set Up Your Clinic
         </h1>
         <p className="mt-1.5 text-center text-xs text-slate-500 max-w-sm mx-auto">
-          Sole entry point for clinic founders. Your account will automatically be provisioned with the <span className="font-semibold text-slate-700">Clinic Owner</span> role.
+          First-time setup. This creates your clinic and your <span className="font-semibold text-slate-700">Clinic Owner</span> login. It can only be done once.
         </p>
       </div>
 
@@ -198,7 +196,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
                   className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#5749e2] bg-white text-slate-900"
                 />
               </div>
-              <p className="text-[10px] text-slate-400 mt-1">Minimum 6 characters with letters and numbers.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Minimum 8 characters.</p>
             </div>
 
             {/* Submit Button */}
@@ -218,24 +216,12 @@ export const SignupPage: React.FC<SignupPageProps> = ({
             </button>
           </form>
 
-          {/* Secondary Links */}
-          <div className="pt-4 border-t border-slate-100 text-center space-y-3">
-            <p className="text-xs text-slate-600">
-              Already registered your clinic?{' '}
-              <button
-                type="button"
-                onClick={onNavigateToLogin}
-                className="font-bold text-[#5749e2] hover:underline"
-              >
-                Log In to Existing Practice
-              </button>
-            </p>
-
-            {/* Explanation regarding staff accounts */}
+          <div className="pt-4 border-t border-slate-100">
             <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-left text-[11px] text-amber-900 flex items-start gap-2">
               <HelpCircle className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
               <p className="leading-relaxed">
-                <span className="font-bold">Joining an existing clinic?</span> Staff accounts (Psychologists & Coordinators) are created directly by your Clinic Owner via <span className="font-semibold">Settings &gt; Staff Management</span>. Do not register a new clinic here.
+                Staff accounts (Psychologists &amp; Coordinators) are created afterwards by the Clinic Owner in{' '}
+                <span className="font-semibold">Clinic Settings</span>.
               </p>
             </div>
           </div>

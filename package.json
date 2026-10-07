@@ -8,11 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "package": "npm run build && node scripts/package-hostinger.mjs",
-    "test:rules": "npx -y firebase-tools@14 emulators:exec --only firestore --project demo-mindledger \"node firebase/rules.test.mjs firebase/firestore.rules\""
+    "package": "npm run build && node scripts/package-hostinger.mjs"
   },
   "dependencies": {
-    "firebase": "^12.19.0",
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1"
@@ -24,7 +22,6 @@
     "@vitejs/plugin-react": "^5.0.4",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3",
-    "@firebase/rules-unit-testing": "^5.0.0"
+    "vite": "^6.2.3"
   }
 }

@@ -1,71 +1,48 @@
-# MindLedger setup (Firebase + Hostinger, no PHP)
+# MindLedger setup (Hostinger, PHP + MySQL)
 
-MindLedger is a set of plain files on Hostinger. Logins and data live in your own free Firebase project. Total time: about 15 minutes.
+MindLedger runs in `public_html/mindledger/` on your Hostinger hosting and keeps its data in your Hostinger MySQL database. No other service is needed.
 
-You need two files from this project:
+## 1. Database
 
-- `mindledger-upload.zip`: the app (run `npm run package` to rebuild it)
-- `firebase/firestore.rules`: the security rules
+MindLedger uses an existing MySQL database. It creates its own tables, all named `ml_...`, and does not touch any other tables, so it can share the Mentra database.
 
-## 1. Create the Firebase project
+`mindledger/api/config.php` is pre-filled with the Mentra database details:
 
-1. Go to <https://console.firebase.google.com> and sign in with a Google account.
-2. Click **Create a project**, name it (e.g. `mentra-mindledger`), and finish. Google Analytics is not needed.
+```php
+'db_host' => 'localhost',
+'db_name' => 'ul80950667_mentra_booking',
+'db_user' => 'ul80950667_mentra_user',
+'db_pass' => 'MentraBooking#2026!',
+```
 
-## 2. Turn on email/password login
+If your database in **hPanel → Databases → Management** has a different name, user or password, change these four lines after uploading (step 2). If you have no database yet, create one there first.
 
-1. In the left menu: **Build → Authentication → Get started**.
-2. **Sign-in method** tab → **Email/Password** → switch on the first toggle → **Save**.
-3. **Settings** tab → **Authorized domains** → **Add domain** → `mentracare.in` (add `www.mentracare.in` too if you use it).
-
-## 3. Create the database in India
-
-1. **Build → Firestore Database → Create database**.
-2. Location: **asia-south1 (Mumbai)**. This cannot be changed later.
-3. Choose **production mode** and create.
-4. Open the **Rules** tab, delete everything in it, paste the whole contents of `firebase/firestore.rules`, and click **Publish**.
-
-The rules are what keep clinic data private. Skip this step and nobody can use the app; paste the wrong rules and data could be exposed.
-
-## 4. Get your web app settings
-
-1. Click the gear icon → **Project settings** → **General**.
-2. Under **Your apps**, click the web icon `</>`, give it a nickname, and **Register app** (Firebase Hosting is not needed).
-3. Keep the `firebaseConfig` values it shows: `apiKey`, `authDomain`, `projectId`, `appId`. These are not secret; the security rules protect the data.
-
-## 5. Upload to Hostinger
+## 2. Upload
 
 1. hPanel → **File Manager** → open `public_html`.
-2. If an old `mindledger` folder exists from earlier attempts, delete it.
-3. Upload `mindledger-upload.zip` into `public_html`, right-click → **Extract**. You should now have `public_html/mindledger/index.html`.
-4. Edit `public_html/mindledger/config.js` and paste your four values:
+2. Delete any old `mindledger` folder from earlier attempts.
+3. Upload `mindledger-upload.zip` into `public_html`, right-click → **Extract**.
+4. Check that you now have `public_html/mindledger/index.html` and `public_html/mindledger/api/index.php`. The two `.htaccess` files are hidden; turn on "show hidden files" to see them.
 
-   ```js
-   window.MINDLEDGER_CONFIG = {
-     firebase: {
-       apiKey: 'AIza...',
-       authDomain: 'mentra-mindledger.firebaseapp.com',
-       projectId: 'mentra-mindledger',
-       appId: '1:1234567890:web:abc123',
-     },
-     allowSignup: true,
-   };
-   ```
+PHP 8.0 or newer is required (hPanel → **Advanced → PHP Configuration**). Hostinger's default is fine.
 
-5. Save. `.htaccess` is a hidden file; it is already in the folder (turn on "show hidden files" to see it).
+## 3. Create your clinic
 
-## 6. Create your clinic
+1. Open <https://mentracare.in/mindledger/>.
+2. The first visit shows **Set Up Your Clinic**. Enter the clinic name, your name, email and a password. You become the **Clinic Owner**.
 
-1. Open <https://mentracare.in/mindledger/signup> and register your clinic. You become the **Clinic Owner**.
-2. Edit `config.js` again and change `allowSignup: true` to `allowSignup: false`, so nobody else can register.
-3. In the app: **Clinic Settings → Add Staff Member** for each psychologist and front-desk coordinator. Give them their email and the initial password; they can change it with **Forgot password?** on the sign-in page.
+   This page appears only once. After that, everyone sees the sign-in page.
+
+   If you see **Database not connected** instead, the message shows the exact problem. Fix the details in `mindledger/api/config.php` (step 1) and click **Try again**.
+3. **Clinic Settings → Add Staff Member** for each psychologist and front-desk coordinator. Give each person their email and initial password.
 
 ## Everyday use
 
-- **Clients**: owner or coordinator creates the client file and assigns a psychologist.
-- **Session notes**: open a client → **Write Clinical Note** → Save Draft → **Sign & Lock**. Signed notes cannot be edited; add an addendum instead.
-- **Assessments**: **Send Assessment** → pick client and PHQ-9 or GAD-7 → **Generate Link** → **Send on WhatsApp** (or copy/email). The client fills it in on their phone without logging in; the score appears in MindLedger right away. Links expire after 7 days and work once.
-- **Reports**: **Clinical Reports** (owner) for clinic activity and CSV export; **Print Client Report** in a client file for a single client.
+- **Clients**: the owner or a coordinator creates the client file and assigns a psychologist.
+- **Session notes**: open a client → **Write Clinical Note** → **Save Draft** → **Sign & Lock**. Signed notes cannot be changed; use **Add Addendum**.
+- **Assessments**: **Send Assessment** → choose client and PHQ-9 or GAD-7 → **Generate Link** → **Send on WhatsApp** (or copy/email). The client answers on their phone without logging in, and the score appears straight away. Each link works once and expires after 7 days. A PHQ-9 with item 9 (thoughts of self-harm) above zero is flagged in red.
+- **Reports**: **Clinical Reports** (owner) shows clinic activity with CSV export. **Print Client Report** in a client's file prints one client.
+- **Passwords**: everyone can change their own via their name (top right) → **Change Password**. The owner can set a new password for any staff member in **Clinic Settings → Reset Password**.
 
 ## Who sees what
 
@@ -75,22 +52,28 @@ The rules are what keep clinic data private. Skip this step and nobody can use t
 | Session notes & assessments | All | Own caseload | None |
 | Reports, settings, staff | Yes | No | No |
 
-These limits are enforced by the Firestore rules, not just hidden in the screens.
+The server enforces these limits, not just the screens.
 
-## Limits and costs
+## Forgotten owner password
 
-Firebase's free Spark plan allows 50,000 reads and 20,000 writes per day, far more than a small practice uses. Nothing is charged unless you upgrade the plan yourself.
+1. Open `https://mentracare.in/hash.php` (Mentra's password tool), type a new password and copy the hash it shows.
+2. hPanel → **Databases → phpMyAdmin** → your database → **SQL** tab, and run:
+
+   ```sql
+   UPDATE ml_users SET password_hash = 'PASTE_HASH_HERE' WHERE role = 'owner';
+   ```
+3. Sign in with the new password. Delete `hash.php` afterwards.
 
 ## Troubleshooting
 
-- **"MindLedger is not connected yet"**: `config.js` still has the `PASTE_...` placeholders.
-- **"You do not have permission to do that"** on every action: the rules from step 3 were not published.
-- **Blank page or 404 when refreshing**: `.htaccess` is missing from `public_html/mindledger/`, or the folder is not named `mindledger`. To use another folder name, rebuild with `VITE_BASE_PATH=/yourname/ npm run package` and change both `/mindledger/` paths in `.htaccess`.
-- **Password reset email not arriving**: check spam. The sender is `noreply@<project>.firebaseapp.com`.
+- **Database not connected**: wrong details in `mindledger/api/config.php`. The message shows MySQL's exact error.
+- **"The MindLedger API was not found"**: the `api` folder is missing from `public_html/mindledger/`.
+- **Blank page, or 404 when refreshing a page**: `.htaccess` is missing from `public_html/mindledger/`, or the folder isn't named `mindledger`. To use a different folder name, rebuild with `VITE_BASE_PATH=/yourname/ npm run package` and change both `/mindledger/` paths in `.htaccess`.
+- **Too many sign-in attempts**: after 10 wrong passwords, that connection must wait 15 minutes.
 
 ## For developers
 
-- `npm run dev`: local development server
+- `npm run dev`: frontend dev server (needs the PHP API running at `/mindledger/api/index.php`)
 - `npm run lint`: type check
 - `npm run package`: build and create `mindledger-upload.zip`
-- `npm run test:rules`: run the 78 security-rule checks against the Firebase emulator (needs Java and `npx firebase-tools`)
+- `node scripts/api-security-test.mjs <api url>`: 65 permission checks against a fresh database

@@ -22,7 +22,7 @@ import {
   AtSign,
 } from 'lucide-react';
 import { Clinic, DPDPRequest, User, isOwner } from '../types';
-import { addStaff, removeStaff, completeDpdpRequest } from '../lib/api';
+import { addStaff, removeStaff, completeDpdpRequest, resetStaffPassword } from '../lib/api';
 import { Avatar } from './Avatar';
 
 // Shrinks a photo to a small square JPEG so it fits comfortably in the staff record.
@@ -149,8 +149,8 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
       setStaffAddError('Staff name and email are required.');
       return;
     }
-    if (newStaffPassword.length < 6) {
-      setStaffAddError('The initial password must be at least 6 characters.');
+    if (newStaffPassword.length < 8) {
+      setStaffAddError('The initial password must be at least 8 characters.');
       return;
     }
 
@@ -216,6 +216,17 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
       setSaveError((e as Error).message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleResetPassword = async (u: User) => {
+    const password = prompt(`New password for ${u.name} (at least 8 characters):`);
+    if (password === null) return;
+    try {
+      await resetStaffPassword(u, password);
+      alert(`Password updated. Give ${u.name} the new password; they have been signed out everywhere.`);
+    } catch (e) {
+      alert((e as Error).message);
     }
   };
 
@@ -313,7 +324,7 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
             <div>
               <h3 className="text-base font-bold text-slate-900">Staff Management & Clinician Roster</h3>
               <p className="text-[11px] text-slate-500">
-                Create login accounts for Psychologists and Client Coordinators. Share the initial password with them; they can reset it from the sign-in page.
+                Create login accounts for Psychologists and Client Coordinators. Share the initial password with them; they can change it later from their profile menu.
               </p>
             </div>
           </div>
@@ -448,8 +459,8 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
                     required
                     value={newStaffPassword}
                     onChange={(e) => setNewStaffPassword(e.target.value)}
-                    placeholder="At least 6 characters"
-                    minLength={6}
+                    placeholder="At least 8 characters"
+                    minLength={8}
                     className="w-full pl-3 pr-8 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#5749e2] bg-white font-mono"
                   />
                   <button
@@ -632,6 +643,15 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
                           Primary Owner
                         </span>
                       ) : (
+                        <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleResetPassword(u)}
+                          className="px-2.5 py-1 text-xs rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-all flex items-center gap-1 shadow-2xs"
+                        >
+                          <Key className="w-3.5 h-3.5 text-[#5749e2]" />
+                          <span>Reset Password</span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -644,6 +664,7 @@ const SettingsBody: React.FC<SettingsViewProps> = ({
                           <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                           <span>Remove</span>
                         </button>
+                        </div>
                       )}
                     </div>
                   )}

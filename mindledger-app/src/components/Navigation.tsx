@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Send, Shield, Sparkles, ChevronDown, LogOut, ShieldCheck } from 'lucide-react';
+import { Plus, Send, Shield, Sparkles, ChevronDown, LogOut, ShieldCheck, Key } from 'lucide-react';
 import { User, Clinic, isPsychologist, isCoordinator } from '../types';
 import { Avatar } from './Avatar';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 interface NavigationProps {
   currentUser: User;
@@ -21,6 +22,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   onLogout,
 }) => {
   const [userDropdown, setUserDropdown] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const portalLabel = isPsychologist(currentUser.role)
     ? 'Psychologist Portal'
     : isCoordinator(currentUser.role)
@@ -127,9 +129,21 @@ export const Navigation: React.FC<NavigationProps> = ({
                 </div>
                 <div className="pt-1.5 border-t border-slate-100 flex items-center gap-1.5 text-[10px] text-emerald-700 bg-emerald-50/60 p-2 rounded-lg">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>Protected by role-based access rules</span>
+                  <span>Stored on your clinic's own server</span>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setUserDropdown(false);
+                  setShowPasswordModal(true);
+                }}
+                className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Change Password</span>
+              </button>
 
               {/* Log Out Button */}
               {onLogout && (
@@ -149,6 +163,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           )}
         </div>
       </div>
+      {showPasswordModal && <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />}
     </header>
   );
 };

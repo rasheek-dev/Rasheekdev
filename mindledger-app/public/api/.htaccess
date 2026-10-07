@@ -1,0 +1,8 @@
+# Only index.php may be requested; config.php holds the database password.
+<FilesMatch "^(?!index\.php$).+$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-store"
+</IfModule>

@@ -244,7 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="flex items-center justify-between pt-0.5 text-[9px] text-emerald-400">
                 <span className="flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
-                  <span>DPDP role-based access</span>
+                  <span>Stored on your clinic's server</span>
                 </span>
               </div>
             </div>

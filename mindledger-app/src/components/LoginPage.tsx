@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { Sparkles, Mail, Lock, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { signIn, resetPassword } from '../lib/api';
+import { signIn } from '../lib/api';
 
 interface LoginPageProps {
-  allowSignup: boolean;
   onLoginSuccess: () => void;
-  onNavigateToSignup: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ allowSignup, onLoginSuccess, onNavigateToSignup }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -30,19 +28,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ allowSignup, onLoginSucces
     }
   };
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = () => {
     setErrorMessage(null);
-    setInfoMessage(null);
-    if (!email.trim()) {
-      setErrorMessage('Enter your email address above, then click "Forgot password?" again.');
-      return;
-    }
-    try {
-      await resetPassword(email);
-      setInfoMessage(`If ${email.trim()} has an account, a password reset link has been sent to it.`);
-    } catch (err) {
-      setErrorMessage((err as Error).message);
-    }
+    setInfoMessage(
+      'Ask your clinic owner to set a new password for you in Clinic Settings. Clinic owners: see "Forgotten owner password" in the setup guide.'
+    );
   };
 
   return (
@@ -156,15 +146,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ allowSignup, onLoginSucces
           </form>
 
           <div className="pt-4 border-t border-slate-100 space-y-3 text-center">
-            {allowSignup && (
-              <p className="text-xs text-slate-600">
-                Setting up a new clinic?{' '}
-                <button type="button" onClick={onNavigateToSignup} className="font-bold text-[#5749e2] hover:underline">
-                  Register as Clinic Owner
-                </button>
-              </p>
-            )}
-
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-left text-[11px] text-slate-600 flex items-start gap-2">
               <ShieldCheck className="w-3.5 h-3.5 text-[#5749e2] shrink-0 mt-0.5" />
               <p className="leading-relaxed">
