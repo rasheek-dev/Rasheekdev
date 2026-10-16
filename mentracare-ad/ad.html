@@ -1,0 +1,273 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../mentracare-video/fonts/fonts.css">
+<style>
+:root{--p:#5749E2;--pk:#F65A84;--t:#2CE8B6;--ink:#29273A;--sp:#F3F1FF;--sk:#FFF1F5;--st:#EBFDF8;--mut:rgba(41,39,58,.66);
+--fb:'DM Sans','Noto Color Emoji',sans-serif;--fh:'Plus Jakarta Sans','DM Sans','Noto Color Emoji',sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0d0c16;font-family:var(--fb);color:#fff}
+.layer{position:absolute;inset:0}
+#night{background:radial-gradient(1200px 900px at 50% 30%,#221e3d 0%,#100e1c 55%,#08070e 100%)}
+#day{background:#F7F5FF;opacity:0}
+.blob{position:absolute;border-radius:50%;filter:blur(130px);opacity:.6}
+.sc{position:absolute;inset:0;opacity:0}
+.cap{position:absolute;left:80px;right:80px;top:240px;text-align:center;font-family:var(--fh);font-weight:800;font-size:66px;line-height:1.15;letter-spacing:-.02em;opacity:0;text-shadow:0 4px 30px rgba(0,0,0,.35)}
+.cap.dk{color:var(--ink);text-shadow:none}
+.center{position:absolute;left:60px;right:60px;text-align:center;font-family:var(--fh);font-weight:800;letter-spacing:-.025em}
+/* chat card */
+.chat{position:absolute;left:110px;top:560px;width:860px;height:1010px;border-radius:64px;overflow:hidden;display:flex;flex-direction:column}
+.chat.n{background:#17151f;box-shadow:0 60px 140px -40px rgba(0,0,0,.9),0 0 0 2px rgba(255,255,255,.05)}
+.chat.d{background:#fff;color:var(--ink);box-shadow:0 60px 120px -50px rgba(87,73,226,.6)}
+.hd{display:flex;align-items:center;gap:24px;padding:40px 44px 30px;border-bottom:2px solid rgba(255,255,255,.06)}
+.d .hd{border-color:rgba(87,73,226,.1)}
+.avt{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#F65A84,#ffb199);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:800;font-size:44px;color:#fff}
+.hd b{font-family:var(--fh);font-size:42px;display:block}
+.hd span{font-size:26px;opacity:.55}
+.msgs{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:20px 40px 10px;gap:0}
+.bw{overflow:hidden;display:flex}
+.bw.o{justify-content:flex-end}
+.bb{max-width:620px;padding:24px 30px 18px;border-radius:38px;font-size:36px;line-height:1.35;margin:10px 0}
+.bb small{display:block;text-align:right;font-size:22px;opacity:.55;margin-top:6px}
+.n .i .bb{background:#2a2738;border-bottom-left-radius:12px}
+.n .o .bb{background:#4a3fc4;border-bottom-right-radius:12px}
+.d .i .bb{background:var(--sk);border-bottom-left-radius:12px}
+.d .o .bb{background:var(--p);color:#fff;border-bottom-right-radius:12px}
+.inp{display:flex;align-items:center;gap:20px;padding:22px 30px 34px}
+.field{flex:1;min-height:96px;border-radius:48px;padding:24px 34px;font-size:34px;line-height:1.35}
+.n .field{background:#24212f}
+.d .field{background:var(--sp)}
+.ph{opacity:.4}
+.caret{display:inline-block;width:3px;height:40px;background:currentColor;vertical-align:-8px;margin-left:2px}
+.sendb{width:96px;height:96px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;flex:none}
+.dots span{display:inline-block;width:16px;height:16px;border-radius:50%;background:rgba(41,39,58,.4);margin:0 5px}
+/* booking card */
+#book{position:absolute;left:110px;top:560px;width:860px;height:1010px;border-radius:64px;background:#fff;color:var(--ink);overflow:hidden;box-shadow:0 60px 120px -50px rgba(87,73,226,.6)}
+.scr{position:absolute;inset:0;padding:70px 56px 40px;opacity:0}
+.scr h4{font-family:var(--fh);font-size:50px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.hint{font-size:30px;color:var(--mut);margin-bottom:34px}
+.chip{display:inline-block;padding:22px 30px;margin:0 12px 18px 0;border-radius:999px;border:3px solid rgba(87,73,226,.18);font-size:32px;font-weight:600;color:var(--ink);background:#fff}
+.chip.on{background:var(--p);border-color:var(--p);color:#fff}
+.lbl{font-size:26px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--p);margin:20px 0 18px}
+.btn{position:absolute;left:56px;right:56px;bottom:56px;height:116px;border-radius:999px;background:var(--p);color:#fff;font-family:var(--fh);font-weight:700;font-size:40px;display:flex;align-items:center;justify-content:center;gap:14px}
+.prof{border-radius:36px;background:var(--sp);padding:28px 30px;margin-bottom:22px;display:flex;gap:26px;align-items:center;border:3px solid transparent}
+.prof.on{border-color:var(--p);background:#fff;box-shadow:0 30px 60px -36px rgba(87,73,226,.7)}
+.av{width:116px;height:116px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center}
+.prof b{display:block;font-family:var(--fh);font-size:36px;margin-bottom:6px}
+.prof span{display:block;font-size:27px;color:var(--mut)}
+.tag{display:inline-block!important;margin-top:10px;padding:6px 16px;border-radius:999px;background:var(--st);color:#0f7a5e!important;font-size:23px!important;font-weight:700}
+.days{display:flex;gap:14px;margin-bottom:30px}
+.day{flex:1;border-radius:26px;padding:18px 0;text-align:center;background:var(--sp);font-size:25px;color:var(--mut);font-weight:600}
+.day b{display:block;font-size:42px;color:var(--ink);font-family:var(--fh)}
+.day.on{background:var(--p);color:#e8e5ff}.day.on b{color:#fff}
+.slots{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.slot{border-radius:24px;border:3px solid rgba(87,73,226,.18);padding:26px 0;text-align:center;font-size:32px;font-weight:600}
+.slot.on{background:var(--p);border-color:var(--p);color:#fff}
+.slot.off{color:rgba(41,39,58,.3);border-style:dashed}
+#tap{position:absolute;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;background:rgba(87,73,226,.25);border:4px solid rgba(87,73,226,.75);opacity:0;z-index:5}
+.cta{display:inline-flex;align-items:center;gap:20px;padding:42px 86px;border-radius:999px;background:var(--p);color:#fff;font-family:var(--fh);font-weight:800;font-size:58px;box-shadow:0 40px 80px -30px rgba(87,73,226,.9)}
+.pill{display:inline-flex;align-items:center;gap:12px;padding:16px 28px;border-radius:999px;background:#fff;color:var(--ink);font-size:32px;font-weight:600;margin:0 6px;box-shadow:0 20px 50px -30px rgba(87,73,226,.6)}
+.dot{width:14px;height:14px;border-radius:50%}
+</style></head>
+<body>
+<div class="layer" id="night"></div>
+<div class="layer" id="day">
+  <div class="blob" id="b1" style="width:900px;height:900px;background:#B9B0FF"></div>
+  <div class="blob" id="b2" style="width:800px;height:800px;background:#FFC2D3"></div>
+  <div class="blob" id="b3" style="width:760px;height:760px;background:#A6F5E0"></div>
+</div>
+
+<!-- S1 hook -->
+<div class="sc" id="s1">
+  <div class="center" id="clock" style="top:700px;font-size:250px;font-weight:700;color:#e9e6ff;text-shadow:0 0 80px rgba(130,115,255,.55)">2:47<span style="font-size:90px;margin-left:16px;opacity:.7">AM</span></div>
+  <div class="center" id="s1t" style="top:1040px;font-size:64px;color:rgba(255,255,255,.8)">Still awake. Again.</div>
+</div>
+
+<!-- S2 night chat -->
+<div class="sc" id="s2">
+  <div class="cap" id="k1">Amma can tell something’s wrong.</div>
+  <div class="cap" id="k2">You want to tell her the truth…</div>
+  <div class="cap" id="k3">…but it’s easier to say</div>
+  <div class="cap" id="k4" style="font-size:96px;color:#FF8BAA">“I’m fine.”</div>
+  <div class="chat n" id="chatN">
+    <div class="hd"><div class="avt">A</div><div><b>Amma</b><span id="nStat">online</span></div></div>
+    <div class="msgs">
+      <div class="bw i"><div class="bb">Did you eat, molu?<small>9:12 PM</small></div></div>
+      <div class="bw o"><div class="bb">Yes Amma<small>9:40 PM</small></div></div>
+      <div class="bw i" id="nIn"><div class="bb">You sounded tired on the phone today. Are you okay? 🥺<small>2:46 AM</small></div></div>
+      <div class="bw o" id="nOut"><div class="bb">I’m fine Amma 😊 just tired<small>2:48 AM</small></div></div>
+    </div>
+    <div class="inp"><div class="field" id="nField"></div><div class="sendb"><svg width="44" height="44" viewBox="0 0 24 24" fill="#fff"><path d="M3 20.5l18-8.5L3 3.5l.01 6.6L15 12 3.01 13.9z"/></svg></div></div>
+  </div>
+</div>
+
+<!-- S3 montage -->
+<div class="sc" id="s3">
+  <div class="center" id="m1" style="top:640px;font-size:96px;color:rgba(255,255,255,.85)">Fine at work.</div>
+  <div class="center" id="m2" style="top:820px;font-size:96px;color:rgba(255,255,255,.85)">Fine with friends.</div>
+  <div class="center" id="m3" style="top:1000px;font-size:96px;color:#FF8BAA">Not fine at 2:47 AM.</div>
+</div>
+
+<!-- S4 turn -->
+<div class="sc" id="s4">
+  <div class="center" id="t1" style="top:690px;font-size:100px;line-height:1.1;color:var(--ink)">You don’t have<br>to carry it <span style="color:var(--p)">alone.</span></div>
+  <div class="center" id="t2" style="top:1060px"><img src="../assets/mentra-logo.png" width="560"></div>
+</div>
+
+<!-- S5 booking -->
+<div class="sc" id="s5">
+  <div class="cap dk" id="q1">Talk to a licensed psychologist.</div>
+  <div class="cap dk" id="q2">Privately. Online.<br>In Malayalam or English.</div>
+  <div class="cap dk" id="q3">Booked in a few minutes.</div>
+  <div id="book">
+    <div class="scr" id="pa">
+      <h4>What’s on your mind?</h4><p class="hint">Choose what feels closest.</p>
+      <span class="chip" id="chA">Anxiety &amp; stress</span><span class="chip">Low mood</span><span class="chip">Overthinking</span><span class="chip">Work &amp; studies</span><span class="chip">Family</span>
+      <p class="lbl">Language</p>
+      <span class="chip" id="chL">Malayalam</span><span class="chip">English</span>
+      <div class="btn">Find my psychologist →</div>
+    </div>
+    <div class="scr" id="pb">
+      <h4>Psychologists who fit</h4><p class="hint">Read their profiles. You choose.</p>
+      <div class="prof" id="pf1"><div class="av" style="background:#E3DFFF"><svg width="60" height="60" viewBox="0 0 24 24" fill="#5749E2"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21a8.5 8.5 0 0 1 17 0z"/></svg></div><div><b>Counselling Psychologist</b><span>Malayalam · English · 45 min</span><span class="tag">✓ Licensed</span></div></div>
+      <div class="prof"><div class="av" style="background:#FFE0E9"><svg width="60" height="60" viewBox="0 0 24 24" fill="#F65A84"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21a8.5 8.5 0 0 1 17 0z"/></svg></div><div><b>Clinical Psychologist</b><span>Malayalam · English · 50 min</span><span class="tag">✓ Licensed</span></div></div>
+      <p class="hint" style="text-align:center;margin-top:16px">Fee shown on every profile, before you book.</p>
+    </div>
+    <div class="scr" id="pc">
+      <h4>Pick a time</h4><p class="hint">Whenever suits you.</p>
+      <div class="days"><div class="day">Mon<b>12</b></div><div class="day on">Tue<b>13</b></div><div class="day">Wed<b>14</b></div><div class="day">Thu<b>15</b></div></div>
+      <div class="slots"><div class="slot">10 AM</div><div class="slot off">11 AM</div><div class="slot">2 PM</div><div class="slot" id="slP">5 PM</div><div class="slot">6 PM</div><div class="slot off">7 PM</div></div>
+      <div class="btn" id="btnPay"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Pay securely</div>
+    </div>
+    <div class="scr" id="pd" style="text-align:center;padding-top:230px">
+      <div id="chk" style="width:220px;height:220px;border-radius:50%;background:var(--t);margin:0 auto 50px;display:flex;align-items:center;justify-content:center"><svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h4 style="font-size:62px">You’re booked</h4>
+      <p class="hint" style="font-size:34px;line-height:1.45;margin-top:20px">Your private session link<br>is sent on WhatsApp.</p>
+    </div>
+    <div id="tap"></div>
+  </div>
+</div>
+
+<!-- S6 day chat -->
+<div class="sc" id="s6">
+  <div class="cap dk" id="w1" style="font-size:44px;color:var(--p);top:250px">3 weeks later</div>
+  <div class="cap dk" id="w2" style="top:330px">Healing starts with one<br>honest conversation.</div>
+  <div class="chat d" id="chatD">
+    <div class="hd"><div class="avt">A</div><div><b>Amma</b><span>online</span></div></div>
+    <div class="msgs">
+      <div class="bw i"><div class="bb">Good morning molu ☀️ How was your week?<small>8:05 AM</small></div></div>
+      <div class="bw o" id="dOut"><div class="bb">Amma, I started talking to someone. I’m actually feeling better ❤️<small>8:07 AM</small></div></div>
+      <div class="bw i" id="dDots"><div class="bb dots" style="padding:30px 30px"><span></span><span></span><span></span></div></div>
+      <div class="bw i" id="dIn"><div class="bb">So proud of you, molu 🤗<small>8:08 AM</small></div></div>
+    </div>
+    <div class="inp"><div class="field" id="dField"></div><div class="sendb"><svg width="44" height="44" viewBox="0 0 24 24" fill="#fff"><path d="M3 20.5l18-8.5L3 3.5l.01 6.6L15 12 3.01 13.9z"/></svg></div></div>
+  </div>
+</div>
+
+<!-- S7 CTA -->
+<div class="sc" id="s7" style="color:var(--ink)">
+  <div class="center" style="top:330px"><img src="../assets/mentra-logo.png" width="500"></div>
+  <div class="center" id="e1" style="top:560px;font-size:96px;line-height:1.1">Your first step<br>takes a few minutes.</div>
+  <div class="center" id="e2" style="top:860px;font-family:var(--fb);font-weight:600;letter-spacing:0">
+    <span class="pill"><span class="dot" style="background:var(--p)"></span>Licensed</span><span class="pill"><span class="dot" style="background:var(--pk)"></span>Private</span><span class="pill"><span class="dot" style="background:var(--t)"></span>Online</span>
+  </div>
+  <div class="center" style="top:1040px"><span class="cta" id="cta">Book a session →</span></div>
+  <div class="center" id="e3" style="top:1270px;font-size:58px;color:var(--p)">mentracare.in</div>
+  <div class="center" style="top:1390px;font-family:var(--fb);font-weight:500;letter-spacing:0;font-size:24px;color:rgba(41,39,58,.5)">Not an emergency service. If you or someone else is in danger, call 112.</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eo=x=>1-Math.pow(1-cl(x),3);
+const eio=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const prog=(t,a,d)=>eo((t-a)/d);
+const win=(t,a,b,fi=.5,fo=.5)=>Math.min(fi?eo((t-a)/fi):(t>=a?1:0),fo?1-eio((t-(b-fo))/fo):(t<b?1:0));
+const rise=(el,p,d=50)=>{el.style.opacity=p;el.style.transform=`translateY(${(1-p)*d}px)`};
+const cap=(id,t,a,b)=>rise($(id),win(t,a,b,.45,.35),30);
+const on=(el,f)=>el.classList.toggle('on',!!f);
+// a bubble grows in at time a
+const bub=(id,t,a,hide)=>{const el=$(id),p=hide?0:prog(t,a,.45);el.style.maxHeight=(p*320)+'px';el.style.opacity=p;el.firstChild.style.transform=`scale(${.85+.15*p})`;el.firstChild.style.transformOrigin=el.classList.contains('o')?'right bottom':'left bottom'};
+
+const T1="I’m not okay. I can’t stop overthinking and I don’t know how to tell you";
+const T2="I’m fine Amma 😊 just tired";
+const T3="Amma, I started talking to someone. I’m actually feeling better ❤️";
+const A1=[...T1],A2=[...T2],A3=[...T3];
+// typing plan: [start, cps, chars]
+const ty1=[5.8,24],del1=[9.5,85],ty2=[10.6,26],send1=12.0;
+const ty3=[30.4,27],send2=ty3[0]+A3.length/ty3[1]+.35;
+const SFX=[];
+for(let i=0;i<A1.length;i++)SFX.push(['key',ty1[0]+i/ty1[1]]);
+for(let i=0;i<A1.length;i+=2)SFX.push(['key',del1[0]+i/del1[1]]);
+for(let i=0;i<A2.length;i++)SFX.push(['key',ty2[0]+i/ty2[1]]);
+for(let i=0;i<A3.length;i++)SFX.push(['key',ty3[0]+i/ty3[1]]);
+SFX.push(['ping',4.6],['send',send1],['send',send2],['ping',send2+1.8]);
+const taps=[];  // filled with [time,x,y]; booking taps also produce sfx
+window.SFX=SFX; window.DURATION=42;
+
+function field(el,t,parts,ph){
+  // parts: list of [startTime, endTime, textAt(t)]
+  let txt=null; for(const f of parts){const v=f(t); if(v!==null)txt=v;}
+  const blink=Math.floor(t*2.2)%2==0;
+  if(!txt){el.innerHTML=`<span class="ph">${ph}</span>`;return}
+  el.innerHTML=txt+`<span class="caret" style="opacity:${blink?1:0}"></span>`;
+}
+const TAPS=[[23.4,0,0,'chA'],[24.0,0,0,'chL'],[26.1,0,0,'pf1'],[27.7,0,0,'slP'],[28.3,0,0,'btnPay']];
+TAPS.forEach(x=>SFX.push(['tap',x[0]]));
+window.TAPS=TAPS;
+window.calib=function(){for(const x of TAPS){render(x[0]-.05);const b=$('book').getBoundingClientRect(),r=$(x[3]).getBoundingClientRect();x[1]=Math.round(r.x-b.x+r.width/2);x[2]=Math.round(r.y-b.y+r.height/2)}return TAPS};
+
+window.render=function(t){
+  // backgrounds
+  const dawn=eio((t-18.8)/1.4); $('day').style.opacity=dawn; $('night').style.opacity=1-dawn;
+  $('b1').style.transform=`translate(${-200+Math.sin(t*.25)*120}px,${-150+Math.cos(t*.2)*100}px)`;
+  $('b2').style.transform=`translate(${520+Math.cos(t*.22)*120}px,${1200+Math.sin(t*.27)*120}px)`;
+  $('b3').style.transform=`translate(${300+Math.sin(t*.18+1)*160}px,${600+Math.cos(t*.23)*160}px)`;
+  const W=[[0,3.9,0,.4],[3.7,13.6],[13.5,18.9],[18.9,22.1],[22,29.6],[29.5,36.3],[36.1,42,.5,0]];
+  W.forEach(([a,b,fi=.45,fo=.45],i)=>$('s'+(i+1)).style.opacity=win(t,a,b,fi,fo));
+
+  // S1 hook (visible on frame 1)
+  $('clock').style.transform=`scale(${1.04-.04*eo(t/3.5)})`;
+  $('clock').style.opacity=.85+.15*Math.sin(t*3);
+  rise($('s1t'),prog(t,.7,.7),30);
+
+  // S2 night chat
+  rise($('chatN'),prog(t,3.8,.7),220);
+  cap('k1',t,4.3,5.75); cap('k2',t,5.85,9.4); cap('k3',t,9.5,11.95); cap('k4',t,12.0,13.6);
+  bub('nIn',t,4.6); bub('nOut',t,send1);
+  field($('nField'),t,[
+    t=>t>=ty1[0]&&t<del1[0]?A1.slice(0,Math.floor((t-ty1[0])*ty1[1])).join(''):null,
+    t=>t>=del1[0]&&t<ty2[0]?A1.slice(0,Math.max(0,A1.length-Math.floor((t-del1[0])*del1[1]))).join(''):null,
+    t=>t>=ty2[0]&&t<send1?A2.slice(0,Math.floor((t-ty2[0])*ty2[1])).join(''):null,
+  ],'Message');
+  $('nStat').textContent=t>=ty1[0]&&t<send1?'online':'online';
+
+  // S3 montage
+  rise($('m1'),prog(t,13.8,.6)); rise($('m2'),prog(t,15.0,.6)); rise($('m3'),prog(t,16.3,.7));
+  const sh=t>16.3&&t<16.8?Math.sin((t-16.3)*60)*6*(1-(t-16.3)/.5):0; $('m3').style.marginLeft=sh+'px';
+
+  // S4 turn
+  rise($('t1'),prog(t,19.3,.9)); rise($('t2'),prog(t,20.4,.8),30);
+
+  // S5 booking
+  rise($('book'),prog(t,22.0,.7),220);
+  cap('q1',t,22.2,24.6); cap('q2',t,24.7,27.1); cap('q3',t,27.2,29.6);
+  const sw=[[22.3,24.7],[24.7,26.8],[26.8,28.6],[28.6,40]];
+  ['pa','pb','pc','pd'].forEach((id,i)=>{const [a,b]=sw[i];const p=win(t,a,b,.3,.25);const el=$(id);el.style.opacity=p;el.style.transform=`translateX(${t<a+.3?(1-p)*80:-(1-p)*80}px)`});
+  on($('chA'),t>23.4); on($('chL'),t>24.0); on($('pf1'),t>26.1); on($('slP'),t>27.7);
+  $('chk').style.transform=`scale(${eo((t-28.8)/.5)*(1+.12*Math.sin(cl((t-28.8)/.7)*Math.PI))})`;
+  const tap=$('tap'); tap.style.opacity=0;
+  for(const [tt,x,y] of TAPS){const d=t-tt; if(d>-.4&&d<.35){const pre=cl((d+.4)/.4);tap.style.left=x+'px';tap.style.top=y+'px';tap.style.opacity=d<0?pre:1-d/.35;tap.style.transform=`scale(${d<0?1.4-.4*pre:1+d*1.5})`}}
+
+  // S6 day chat
+  rise($('chatD'),prog(t,29.6,.7),220);
+  cap('w1',t,29.7,36.3); cap('w2',t,send2+.2,36.3);
+  bub('dOut',t,send2); bub('dDots',t,send2+.6,t>=send2+1.8); bub('dIn',t,send2+1.8);
+  $('dDots').querySelectorAll('span').forEach((s,i)=>s.style.transform=`translateY(${Math.sin(t*9-i*1.2)*6}px)`);
+  field($('dField'),t,[t=>t>=ty3[0]&&t<send2?A3.slice(0,Math.floor((t-ty3[0])*ty3[1])).join(''):null],'Message');
+
+  // S7 CTA
+  rise($('e1'),prog(t,36.4,.7)); rise($('e2'),prog(t,37.0,.6),30); rise($('e3'),prog(t,38.0,.6),30);
+  const cp=prog(t,37.5,.7); $('cta').style.opacity=cp;
+  $('cta').style.transform=`scale(${(.8+.2*cp)*(1+.035*Math.sin((t-38.2)*3.6)*(t>38.2))})`;
+};
+</script></body></html>
