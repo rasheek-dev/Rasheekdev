@@ -1,0 +1,123 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../mentracare-video/fonts/fonts.css">
+<style>
+@font-face{font-family:'Noto Sans Malayalam';font-weight:700;src:url(../mentracare-impact/NotoSansMalayalam-700.ttf)}
+:root{--p:#5749E2;--pk:#F65A84;--t:#2CE8B6;--ink:#29273A;--mut:rgba(41,39,58,.66);
+--fh:'Plus Jakarta Sans','DM Sans','Noto Sans Malayalam',sans-serif;--fb:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#F7F5FF;font-family:var(--fh);color:var(--ink)}
+.blob{position:absolute;border-radius:50%;filter:blur(130px);opacity:.6}
+.sc{position:absolute;inset:0;opacity:0}
+.c{position:absolute;left:70px;right:70px;text-align:center}
+#bar{position:absolute;left:80px;right:80px;top:200px;display:flex;gap:14px;opacity:0}
+#bar div{flex:1;height:12px;border-radius:6px;background:rgba(87,73,226,.15);overflow:hidden}
+#bar div span{display:block;height:100%;width:0;background:var(--p);border-radius:6px}
+#tagline{position:absolute;left:0;right:0;top:250px;text-align:center;font-size:30px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--p);opacity:0}
+.sign{position:absolute;inset:0;opacity:0}
+.num{position:absolute;left:0;right:0;top:330px;text-align:center;font-size:420px;font-weight:800;line-height:1;letter-spacing:-.05em}
+.ill{position:absolute;left:340px;top:820px;width:400px;height:400px;border-radius:120px;display:flex;align-items:center;justify-content:center;box-shadow:0 40px 90px -50px rgba(87,73,226,.8)}
+.h{position:absolute;left:70px;right:70px;top:1290px;text-align:center;font-size:80px;font-weight:800;line-height:1.08;letter-spacing:-.03em}
+.s{position:absolute;left:110px;right:110px;top:1500px;text-align:center;font-family:var(--fb);font-size:40px;line-height:1.4;color:var(--mut);font-weight:500}
+.cta{display:inline-flex;align-items:center;gap:20px;padding:44px 90px;border-radius:999px;background:var(--p);color:#fff;font-weight:800;font-size:60px;box-shadow:0 40px 80px -30px rgba(87,73,226,.9)}
+.save{display:inline-flex;align-items:center;gap:14px;padding:18px 34px;border-radius:999px;background:#fff;font-size:34px;font-weight:700;color:var(--ink);box-shadow:0 20px 50px -30px rgba(87,73,226,.6)}
+</style></head>
+<body>
+<div class="blob" id="b1" style="width:900px;height:900px;background:#B9B0FF"></div>
+<div class="blob" id="b2" style="width:800px;height:800px;background:#FFC2D3"></div>
+<div class="blob" id="b3" style="width:760px;height:760px;background:#A6F5E0"></div>
+
+<!-- hook -->
+<div class="sc" id="hk">
+  <div class="c" id="h1" style="top:560px;font-size:124px;font-weight:800;line-height:1.02;letter-spacing:-.035em">Not sure if you<br>need <span style="color:var(--p)">therapy?</span></div>
+  <div class="c" id="h2" style="top:960px;font-family:'Noto Sans Malayalam';font-size:58px;font-weight:700;color:var(--pk)">ആരോടെങ്കിലും സംസാരിക്കാൻ സമയമായോ?</div>
+  <div class="c" id="h3" style="top:1140px;font-size:64px;font-weight:800">Watch for these <span style="background:var(--p);color:#fff;padding:4px 26px;border-radius:24px">5 signs</span></div>
+  <div class="c" id="h4" style="top:1340px"><span class="save"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5749E2" stroke-width="2.4" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>Save this for later</span></div>
+</div>
+
+<div id="bar"><div><span></span></div><div><span></span></div><div><span></span></div><div><span></span></div><div><span></span></div></div>
+<div id="tagline">Signs it’s time to talk</div>
+
+<!-- signs -->
+<div class="sign" id="g1"><div class="num" style="color:var(--p)">1</div>
+  <div class="ill" style="background:#E3DFFF"><svg width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="#5749E2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 18.5H7a4.5 4.5 0 1 1 .9-8.9A6 6 0 0 1 19.4 11a3.8 3.8 0 0 1-1.9 7.5z"/><path id="rain1" d="M9 21l-.6 1.5M13 21l-.6 1.5M17 21l-.6 1.5"/></svg></div>
+  <div class="h">The low mood<br>won’t lift</div><div class="s">Sadness or worry most days, for two weeks or more.</div></div>
+<div class="sign" id="g2"><div class="num" style="color:var(--pk)">2</div>
+  <div class="ill" style="background:#FFE0E9"><svg width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="#F65A84" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M15 4h3l-3 3.5h3M19 8.5h2l-2 2.3h2"/></svg></div>
+  <div class="h">Your sleep or<br>appetite changed</div><div class="s">Sleeping or eating much more, or much less, than usual.</div></div>
+<div class="sign" id="g3"><div class="num" style="color:#14b88c">3</div>
+  <div class="ill" style="background:#D4FBEF"><svg width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="#14b88c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/><path d="M12 7.6l-1.4 3.6 2.6 1.6-1.8 3.8"/></svg></div>
+  <div class="h">Nothing feels<br>enjoyable anymore</div><div class="s">Things you used to love now feel flat or like effort.</div></div>
+<div class="sign" id="g4"><div class="num" style="color:var(--p)">4</div>
+  <div class="ill" style="background:#E3DFFF"><svg width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="#5749E2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7"/><path d="M3 12.5h18"/><path d="M10 16l4-3M14 16l-4-3" stroke="#F65A84"/></svg></div>
+  <div class="h">Work, studies or<br>relationships suffer</div><div class="s">It’s getting harder to focus, cope or connect.</div></div>
+<div class="sign" id="g5"><div class="num" style="color:var(--pk)">5</div>
+  <div class="ill" style="background:#FFE0E9"><svg width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="#F65A84" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.4 7.6L3 21l1.4-5.4A8.5 8.5 0 1 1 21 12z"/><path d="M8.5 13.5c1.8 1.6 5.2 1.6 7 0"/><circle cx="9" cy="10" r=".6" fill="#F65A84"/><circle cx="15" cy="10" r=".6" fill="#F65A84"/></svg></div>
+  <div class="h">You keep saying<br>“I’m fine”</div><div class="s">…but there’s no one you can really talk to.</div></div>
+
+<!-- reassurance -->
+<div class="sc" id="rs">
+  <div class="c" id="r1" style="top:620px;font-size:100px;font-weight:800;line-height:1.08;letter-spacing:-.03em">You don’t need<br>a crisis to start<br><span style="color:var(--p)">therapy.</span></div>
+  <div class="c" id="r2" style="top:1130px;font-family:var(--fb);font-size:44px;line-height:1.45;color:var(--mut);font-weight:500;padding:0 50px">Seeing even one of these signs is a good reason to talk to a professional.</div>
+</div>
+
+<!-- CTA -->
+<div class="sc" id="ct">
+  <div class="c" style="top:360px"><img src="../assets/mentra-logo.png" width="520"></div>
+  <div class="c" id="e1" style="top:600px;font-size:76px;font-weight:800;line-height:1.12;letter-spacing:-.03em">Talk to a licensed<br>psychologist, privately.</div>
+  <div class="c" id="e2" style="top:840px;font-family:var(--fb);font-size:38px;line-height:1.55;color:var(--mut);font-weight:500">Online · Malayalam &amp; English<br>Choose your psychologist · Fee shown upfront</div>
+  <div class="c" style="top:1060px"><span class="cta" id="cbtn">Book a session →</span></div>
+  <div class="c" id="e3" style="top:1290px;font-size:62px;font-weight:800;color:var(--p)">mentracare.in</div>
+  <div class="c" id="e4" style="top:1400px;font-family:var(--fb);font-size:26px;line-height:1.45;color:rgba(41,39,58,.55);font-weight:500">In crisis or thinking of harming yourself? Call 112, or Tele-MANAS 14416 (free, 24/7).<br>This video is general information, not a diagnosis.</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eo=x=>1-Math.pow(1-cl(x),3), eo5=x=>1-Math.pow(1-cl(x),5);
+const eio=x=>{x=cl(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const prog=(t,a,d)=>eo((t-a)/d);
+const win=(t,a,b,fi=.4,fo=.4)=>Math.min(fi?eo((t-a)/fi):(t>=a?1:0),fo?1-eio((t-(b-fo))/fo):(t<b?1:0));
+const rise=(el,p,d=50)=>{el.style.opacity=p;el.style.transform=`translateY(${(1-p)*d}px)`};
+const G0=4.6, GL=4.2;                 // first sign start, length per sign
+const RS=G0+5*GL, CT=RS+4.4;          // reassurance, CTA
+window.DURATION=CT+6.4;
+const SFX=[['pop',0],['pop',.9],['pop',1.6],['pop',2.5]];
+for(let i=0;i<5;i++)SFX.push(['whoosh',G0+i*GL],['pop',G0+i*GL+.15]);
+SFX.push(['whoosh',RS],['whoosh',CT],['pop',CT+1.6]);
+window.SFX=SFX; window.BEATS={start:G0,bpm:96,end:window.DURATION-1};
+
+window.render=function(t){
+  $('b1').style.transform=`translate(${-200+Math.sin(t*.25)*120}px,${-150+Math.cos(t*.2)*100}px)`;
+  $('b2').style.transform=`translate(${520+Math.cos(t*.22)*120}px,${1200+Math.sin(t*.27)*120}px)`;
+  $('b3').style.transform=`translate(${300+Math.sin(t*.18+1)*160}px,${600+Math.cos(t*.23)*160}px)`;
+
+  // hook: visible on first frame
+  $('hk').style.opacity=win(t,-1,G0,0,.35);
+  const p1=eo5(t/.35); $('h1').style.opacity=1; $('h1').style.transform=`scale(${1.12-.12*p1})`;
+  rise($('h2'),prog(t,.9,.5),30); rise($('h3'),prog(t,1.6,.5),30); rise($('h4'),prog(t,2.5,.5),30);
+  $('h4').style.transform+=` scale(${1+.04*Math.sin((t-3)*6)*(t>3)})`;
+
+  // progress bar + label
+  const bo=win(t,G0,RS,.3,.3); $('bar').style.opacity=bo; $('tagline').style.opacity=bo;
+  [...$('bar').querySelectorAll('span')].forEach((s,i)=>s.style.width=(cl((t-(G0+i*GL))/GL)*100)+'%');
+
+  for(let i=0;i<5;i++){const a=G0+i*GL,b=a+GL,el=$('g'+(i+1));
+    el.style.opacity=win(t,a,b+.05,.25,.3);
+    const n=el.querySelector('.num'),il=el.querySelector('.ill'),h=el.querySelector('.h'),s=el.querySelector('.s');
+    const pn=eo5((t-a)/.45); n.style.transform=`scale(${1.5-.5*pn}) translateY(${(1-pn)*-40}px)`; n.style.opacity=pn;
+    const pi=eo((t-a-.25)/.55); il.style.opacity=pi; il.style.transform=`scale(${.7+.3*pi}) rotate(${(1-pi)*-8+Math.sin((t-a)*2.2)*2}deg) translateY(${Math.sin((t-a)*2.6)*10}px)`;
+    rise(h,prog(t,a+.5,.5),40); rise(s,prog(t,a+1.0,.5),30);
+    if(t>b-.3){const q=cl((t-(b-.3))/.3);el.style.transform=`translateX(${-q*120}px)`}else el.style.transform='';
+  }
+  const r1=$('rain1'); r1.style.transform=`translateY(${((t*1.4)%1)*1.2}px)`;
+
+  $('rs').style.opacity=win(t,RS,CT,.35,.35);
+  rise($('r1'),prog(t,RS+.1,.7)); rise($('r2'),prog(t,RS+1.2,.6),30);
+
+  $('ct').style.opacity=win(t,CT,99,.35,0);
+  rise($('e1'),prog(t,CT+.2,.6)); rise($('e2'),prog(t,CT+.8,.6),30);
+  const cp=eo((t-CT+-1.6)/.6); $('cbtn').style.opacity=cp; $('cbtn').style.transform=`scale(${(.85+.15*cp)*(1+.035*Math.sin((t-CT-2.2)*3.6)*(t>CT+2.2))})`;
+  rise($('e3'),prog(t,CT+2.1,.5),20); $('e4').style.opacity=prog(t,CT+2.5,.5);
+};
+</script></body></html>
