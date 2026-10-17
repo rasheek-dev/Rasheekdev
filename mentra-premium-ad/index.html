@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mentra Ad Preview</title>
+<style>
+@font-face{font-family:'Plus Jakarta Sans';font-weight:600;src:url(assets/fonts/PlusJakartaSans-600.ttf)}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:700;src:url(assets/fonts/PlusJakartaSans-700.ttf)}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:800;src:url(assets/fonts/PlusJakartaSans-800.ttf)}
+@font-face{font-family:'DM Sans';font-weight:500;src:url(assets/fonts/DMSans-500.ttf)}
+@font-face{font-family:'DM Sans';font-weight:600;src:url(assets/fonts/DMSans-600.ttf)}
+:root{--p:#5749E2;--t:#2CE8B6;--ink:#29273A;--w:#FFFFFF;--lav:#F3F1FF;--mint:#EBFDF8;--fh:'Plus Jakarta Sans',sans-serif;--fb:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:#0E0C16;color:#fff;font-family:var(--fb)}
+body.render{background:#000;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#1d1a2b;transform-origin:0 0}
+#svg{position:absolute;inset:0}
+#caps .cap{position:absolute;left:90px;right:90px;text-align:center;font-family:var(--fh);font-weight:700;letter-spacing:-.02em;color:#fff;opacity:0;text-shadow:0 2px 24px rgba(10,8,20,.45);will-change:transform,opacity}
+#caps .cap.ink{color:var(--ink);text-shadow:none}
+#caps .hero{top:300px;font-size:86px;line-height:1.1}
+#caps .heroS{top:250px;font-size:70px;line-height:1.12}
+#caps .stack0,#caps .stack1,#caps .stack2{font-size:78px;line-height:1.1}
+#caps .stack0{top:290px}#caps .stack1{top:390px}#caps .stack2{top:490px}
+#brandText,#endCard{position:absolute;inset:0;opacity:0}
+.center{position:absolute;left:80px;right:80px;text-align:center}
+#b-logo{position:absolute;left:250px;top:620px;width:580px;opacity:0}
+#b-line{top:1290px;font-family:var(--fh);font-weight:700;font-size:62px;line-height:1.15;color:var(--ink);letter-spacing:-.02em}
+#b-svc{top:1460px;font-family:var(--fh);font-weight:600;font-size:40px;color:var(--p);letter-spacing:.01em;white-space:pre}
+#endCard{background:var(--lav)}
+#e-logo{top:520px}
+#e-line{top:800px;font-family:var(--fh);font-weight:800;font-size:84px;line-height:1.1;color:var(--ink);letter-spacing:-.03em}
+#e-btnWrap{top:1110px}
+#e-btn{position:relative;display:inline-flex;align-items:center;gap:18px;padding:44px 86px;border-radius:999px;background:var(--p);color:#fff;font-family:var(--fh);font-weight:800;font-size:52px;letter-spacing:.06em;box-shadow:0 40px 80px -36px rgba(87,73,226,.95)}
+#e-ring{position:absolute;inset:-14px;border-radius:999px;border:4px solid var(--t);opacity:0}
+#e-url{top:1340px;font-family:var(--fh);font-weight:800;font-size:64px;color:var(--p);letter-spacing:-.01em}
+#grain{position:absolute;left:0;top:0;width:540px;height:960px;transform-origin:0 0;opacity:.045;mix-blend-mode:overlay;pointer-events:none}
+#safe{position:absolute;inset:0;pointer-events:none;display:none}
+#safe div{position:absolute;left:0;right:0;background:rgba(246,90,132,.18);border:2px dashed rgba(246,90,132,.7);color:#fff;font:600 26px var(--fb);display:flex;align-items:center;justify-content:center}
+/* player */
+#player{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px}
+#wrap{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(0,0,0,.8)}
+#controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;max-width:720px;width:100%}
+#controls button,#controls select{background:#221E33;color:#fff;border:1px solid #3B3555;border-radius:10px;padding:10px 14px;font:600 15px var(--fb);cursor:pointer}
+#controls button.primary{background:var(--p);border-color:var(--p)}
+#scrub{flex:1;min-width:200px;accent-color:var(--p)}
+#time{font:600 14px var(--fb);color:#B8B2D6;min-width:96px;text-align:right;font-variant-numeric:tabular-nums}
+.note{color:#8E88AE;font-size:13px;text-align:center;max-width:640px;line-height:1.5}
+body.render #controls,body.render .note{display:none}
+body.render #player{padding:0}
+body.render #wrap{border-radius:0;box-shadow:none}
+</style></head>
+<body>
+<div id="player">
+  <div id="wrap"><div id="stage">
+    <svg id="svg" viewBox="0 0 1080 1920" width="1080" height="1920" xmlns="http://www.w3.org/2000/svg">
+      <defs id="defs"></defs>
+      <g id="room"></g>
+      <g id="sess" style="opacity:0"></g>
+      <g id="brand" style="opacity:0"></g>
+      <rect width="1080" height="1920" fill="url(#vig)" pointer-events="none"/>
+      <rect id="wash" width="1080" height="1920" fill="#F3F1FF" opacity="0"/>
+    </svg>
+    <div id="brandText"><img id="b-logo" src="assets/mentra-logo.png" alt="Mentra"><div class="center" id="b-line"></div><div class="center" id="b-svc"></div></div>
+    <div id="endCard">
+      <div class="center" id="e-logo"><img src="assets/mentra-logo.png" alt="Mentra" width="600"></div>
+      <div class="center" id="e-line"></div>
+      <div class="center" id="e-btnWrap"><span id="e-btn">BOOK YOUR SESSION <span id="e-ring"></span></span></div>
+      <div class="center" id="e-url"></div>
+    </div>
+    <div id="caps"></div>
+    <canvas id="grain" width="540" height="960"></canvas>
+    <div id="safe"><div style="top:0;height:220px">Top UI zone</div><div style="bottom:0;height:420px">Caption / CTA UI zone (Reels &amp; Stories)</div></div>
+  </div></div>
+  <div id="controls">
+    <button class="primary" id="play">▶ Play</button>
+    <button id="restart">↺ Restart</button>
+    <input type="range" id="scrub" min="0" max="40" step="0.01" value="0">
+    <span id="time">0.00 / 40.00</span>
+    <select id="cut"><option value="main">40s master</option><option value="short">15s Meta cut</option></select>
+    <button id="safeBtn">Safe zones</button>
+  </div>
+  <p class="note">Silent preview of the animation. The MP4 files with music, sound effects and voice-over are made by <code>build.sh</code> (see README). Edit all on-screen text in <code>src/config.js</code>.</p>
+</div>
+<script src="src/config.js"></script>
+<script src="src/character.js"></script>
+<script src="src/engine.js"></script>
+<script>
+(function(){
+  const A=window.MentraAd, q=new URLSearchParams(location.search), $=id=>document.getElementById(id);
+  A.build();
+  const isRender=q.has('render'); if(isRender)document.body.classList.add('render');
+  let cut=q.get('cut')||'main', t=+(q.get('t')||0), playing=false, last=0;
+  function fit(){ if(isRender)return; const s=Math.min((innerWidth-32)/1080,(innerHeight-150)/1920,1);
+    $('stage').style.transform=`scale(${s})`; $('wrap').style.width=1080*s+'px'; $('wrap').style.height=1920*s+'px'; }
+  function setCut(c){cut=c;A.setCut(c);$('scrub').max=window.DURATION;$('cut').value=c;t=Math.min(t,window.DURATION);draw()}
+  function draw(){A.render(t);$('scrub').value=t;$('time').textContent=`${t.toFixed(2)} / ${window.DURATION.toFixed(2)}`}
+  function loop(now){ if(!playing)return; t+=Math.min(.05,(now-last)/1000); last=now;
+    if(t>=window.DURATION){t=window.DURATION;playing=false;$('play').textContent='▶ Play'} draw(); requestAnimationFrame(loop)}
+  $('play').onclick=()=>{ if(t>=window.DURATION)t=0; playing=!playing; $('play').textContent=playing?'❚❚ Pause':'▶ Play'; last=performance.now(); requestAnimationFrame(loop)};
+  $('restart').onclick=()=>{t=0;draw()};
+  $('scrub').oninput=e=>{t=+e.target.value;draw()};
+  $('cut').onchange=e=>{t=0;setCut(e.target.value)};
+  $('safeBtn').onclick=()=>{const s=$('safe');s.style.display=s.style.display==='block'?'none':'block'};
+  addEventListener('resize',fit); fit();
+  document.fonts.ready.then(()=>{setCut(cut);window.READY=true});
+  window.seek=x=>{t=x;A.render(t)};
+})();
+</script>
+</body></html>
