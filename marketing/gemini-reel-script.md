@@ -15,7 +15,7 @@ AI video changes faces between clips unless you give it a reference. Before maki
 
 1. In Gemini, **generate an image** using each prompt below.
 2. Save the best one of each.
-3. For every video shot, **upload the matching image as the reference or starting image** if your Gemini video mode allows it. Also paste the character description word for word. Never shorten it.
+3. For every video shot, **upload the matching image as the reference or starting image** if your Gemini video mode allows it. The character description is already written into every shot prompt below.
 
 **ANJALI (lead):**
 ```
@@ -37,62 +37,62 @@ Photorealistic portrait of a 45-year-old South Indian woman psychologist, calm k
 - **Takes:** generate each shot once. Only regenerate shots with a problem: warped hands, a changed face, garbled text or wrong lighting.
 - Each clip is about 8 seconds. I will only use the best 2–5 seconds of each, so a clip doesn't have to be perfect all the way through.
 
-**Paste this block at the end of EVERY video prompt:**
+**Style block (already included at the end of every shot prompt below, shown here for reference):**
 ```
 Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ---
 
-## The shots (7 prompts)
+## The shots (7 prompts). Each one is complete: copy the whole grey box and paste it into Gemini as it is
 
 ### SHOT 1: "3:47 AM" (the hook)
 ```
-[Paste ANJALI description] lies awake in bed in a small dark apartment bedroom in Kochi, Kerala at night. She is on her side, staring at the ceiling, then slowly turns her head to look at her phone on the pillow; the phone screen lights her face with cool blue light. A ceiling fan turns slowly above her, its shadow moving across the wall. Light rain against the window, streetlight glow through thin curtains. Camera: slow top-down push-in from directly above the bed, 35mm lens. Mood: lonely, restless, quiet. Audio: ceiling fan hum, soft rain, distant scooter passing, her slow exhale.
-[Paste STYLE block]
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She lies awake in bed in a small dark apartment bedroom in Kochi, Kerala at night. She is on her side, staring at the ceiling, then slowly turns her head to look at her phone on the pillow; the phone screen lights her face with cool blue light. A ceiling fan turns slowly above her, its shadow moving across the wall. Light rain against the window, streetlight glow through thin curtains. Camera: slow top-down push-in from directly above the bed, 35mm lens. Mood: lonely, restless, quiet. Audio: ceiling fan hum, soft rain, distant scooter passing, her slow exhale.
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 2: "Too much" (pressure at work)
 ```
-[Paste ANJALI description] sits at a cluttered desk in a modern Kochi office in the afternoon, laptop open, a half-finished cup of chai beside her. Colleagues talk and laugh, blurred in the background. She stares at the laptop without typing, then closes her eyes and presses her fingertips to her temples. Camera: slow push-in from the side at eye level, 50mm lens, background heavily out of focus. Audio: keyboard clicks, overlapping office chatter, repeated notification pings, all slightly muffled as if heard underwater.
-[Paste STYLE block]
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She sits at a cluttered desk in a modern Kochi office in the afternoon, laptop open, a half-finished cup of chai beside her. Colleagues talk and laugh, blurred in the background. She stares at the laptop without typing, then closes her eyes and presses her fingertips to her temples. Camera: slow push-in from the side at eye level, 50mm lens, background heavily out of focus. Audio: keyboard clicks, overlapping office chatter, repeated notification pings, all slightly muffled as if heard underwater.
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 3: "Nodding along" (family)
 ```
-[Paste ANJALI description] stands in a warm, slightly cluttered Kerala home kitchen in the evening, steel vessels on the counter, a pressure cooker on the gas stove. Her mother, a 55-year-old Malayali woman in a cotton nightie with a towel on her shoulder, talks to her from the side, out of focus. Anjali nods and gives a small polite smile, but her eyes are distant and empty. The pressure cooker suddenly whistles loudly; she flinches slightly. Camera: static medium close-up on Anjali, 50mm, mother soft in foreground left. Audio: mother speaking indistinct Malayalam, sizzling, the sharp pressure cooker whistle.
-[Paste STYLE block]
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She stands in a warm, slightly cluttered Kerala home kitchen in the evening, steel vessels on the counter, a pressure cooker on the gas stove. Her mother, a 55-year-old Malayali woman in a cotton nightie with a towel on her shoulder, talks to her from the side, out of focus. Anjali nods and gives a small polite smile, but her eyes are distant and empty. The pressure cooker suddenly whistles loudly; she flinches slightly. Camera: static medium close-up on Anjali, 50mm, mother soft in foreground left. Audio: mother speaking indistinct Malayalam, sizzling, the sharp pressure cooker whistle.
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 4: "Hesitation" (the decision, on the balcony in the rain)
 ```
-[Paste ANJALI description] stands on a small apartment balcony at dusk during heavy monsoon rain in Kochi, coconut trees and wet rooftops behind her, blue-hour light. She holds her phone in both hands, looking down at it, thumb hovering over the screen, hesitating. She takes a deep breath, then taps the screen once. Camera: slow arc around her from behind her shoulder to her face, 35mm lens. Audio: heavy rain on a tin roof, distant thunder, her deep breath.
-[Paste STYLE block]
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She stands on a small apartment balcony at dusk during heavy monsoon rain in Kochi, coconut trees and wet rooftops behind her, blue-hour light. She holds her phone in both hands, looking down at it, thumb hovering over the screen, hesitating. She takes a deep breath, then taps the screen once. Camera: slow arc around her from behind her shoulder to her face, 35mm lens. Audio: heavy rain on a tin roof, distant thunder, her deep breath.
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 5: Phone close-up (for the Mentra screen insert)
 ```
 Extreme close-up of a young South Indian woman's hands holding a smartphone, wearing an olive-green t-shirt sleeve and a thin gold bangle, the phone screen is solid bright chroma green filling the entire screen, her thumb scrolls slowly then taps. Soft blue-hour light, raindrops on a balcony railing blurred behind. Camera: static, 100mm macro lens, shallow depth of field. Audio: rain.
-[Paste STYLE block]
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 > I will replace the green screen with the real mentracare.in booking page. Don't let AI draw the app screen, because AI text comes out garbled.
 
 ### SHOT 6: "Start anywhere" (the session)
 **6A, Anjali:**
 ```
-[Paste ANJALI description] sits cross-legged on her bed at night wearing white wired earphones, a laptop in front of her lit by a warm bedside lamp. She looks at the screen nervously, then speaks softly in English: "I don't really know where to start." She listens, and her shoulders slowly drop as she lets out a long breath and almost smiles. Camera: slow push-in from over the laptop, 50mm lens, warm amber lamp light. Audio: quiet room tone, her soft voice.
-[Paste STYLE block]
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She sits cross-legged on her bed at night wearing white wired earphones, a laptop in front of her lit by a warm bedside lamp. She looks at the screen nervously, then speaks softly in English: "I don't really know where to start." She listens, and her shoulders slowly drop as she lets out a long breath and almost smiles. Camera: slow push-in from over the laptop, 50mm lens, warm amber lamp light. Audio: quiet room tone, her soft voice.
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 **6B, Dr. Meera (shot as the laptop screen):**
 ```
-[Paste DR. MEERA description] on a video call, framed like a laptop webcam, looking warmly into the camera, nodding slowly, and says gently in English: "That's okay. Start anywhere. I'm listening." Natural webcam framing, soft window light. Audio: her calm voice, slight video-call audio quality.
-[Paste STYLE block, but replace "ARRI Alexa" with "laptop webcam"]
+A 45-year-old South Indian woman psychologist, calm kind face, short-sleeved soft blue cotton kurta, reading glasses pushed up on her head, grey strands in her black hair, sitting in a warm home office with a bookshelf and a small plant blurred behind her, is on a video call, framed like a laptop webcam, looking warmly into the camera, nodding slowly, and says gently in English: "That's okay. Start anywhere. I'm listening." Natural webcam framing, soft window light. Audio: her calm voice, slight video-call audio quality.
+Style: photorealistic, cinematic documentary realism, shot on a laptop webcam, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 7: "A little lighter" (the next morning)
 ```
-[Paste ANJALI description] in the early morning pulls open the curtains of her bedroom; golden Kerala sunlight floods in across her face. She closes her eyes, takes a slow deep breath, and a small, real smile appears. Then she picks up a steel tumbler of tea from the windowsill, with green coconut trees outside. Camera: slow push-in, 35mm lens, warm golden light, light dust in the air. Audio: birds (koel calling), distant temple bell, curtain rings sliding.
-[Paste STYLE block]
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She in the early morning pulls open the curtains of her bedroom; golden Kerala sunlight floods in across her face. She closes her eyes, takes a slow deep breath, and a small, real smile appears. Then she picks up a steel tumbler of tea from the windowsill, with green coconut trees outside. Camera: slow push-in, 35mm lens, warm golden light, light dust in the air. Audio: birds (koel calling), distant temple bell, curtain rings sliding.
+Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ---
