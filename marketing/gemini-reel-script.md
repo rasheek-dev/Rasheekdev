@@ -27,6 +27,17 @@ Photorealistic portrait of a 27-year-old South Indian Malayali woman, warm mediu
 Photorealistic portrait of a 45-year-old South Indian woman psychologist, calm kind face, short-sleeved soft blue cotton kurta, reading glasses pushed up on her head, grey strands in her black hair, sitting in a warm home office with a bookshelf and a small plant blurred behind her. Natural window light, real skin texture, documentary photography style. Horizontal 16:9.
 ```
 
+### Wardrobe (who wears what)
+Her face, hair, bindi and gold chain stay the same in every shot. Only her clothes change, the way they would in real life:
+
+| Shots | Time | Anjali wears |
+|---|---|---|
+| 1 | Night, in bed | Oversized faded olive-green t-shirt |
+| 2, 3, 4, 5 | Work, then just home that evening | Mustard-yellow cotton kurti with a blue ID lanyard |
+| 6A, 7 | Night session, next morning | Olive-green t-shirt again |
+
+When you make a scene image from her photo, say *"same face and hair as this photo"* and then name the outfit from this table. Don't say "same clothes".
+
 ---
 
 ## Settings to use for every video
@@ -54,25 +65,25 @@ Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vi
 
 ### SHOT 2: "Too much" (pressure at work)
 ```
-A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She sits at a cluttered desk in a modern Kochi office in the afternoon, laptop open, a half-finished cup of chai beside her. Colleagues talk and laugh, blurred in the background. She stares at the laptop without typing, then closes her eyes and presses her fingertips to her temples. Camera: slow push-in from the side at eye level, 50mm lens, background heavily out of focus. Audio: keyboard clicks, overlapping office chatter, repeated notification pings, all slightly muffled as if heard underwater.
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing a simple mustard-yellow cotton kurti with three-quarter sleeves and a blue office ID lanyard. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She sits at a cluttered desk in a modern Kochi office in the afternoon, laptop open, a half-finished cup of chai beside her. Colleagues talk and laugh, blurred in the background. She stares at the laptop without typing, then closes her eyes and presses her fingertips to her temples. Camera: slow push-in from the side at eye level, 50mm lens, background heavily out of focus. Audio: keyboard clicks, overlapping office chatter, repeated notification pings, all slightly muffled as if heard underwater.
 Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 3: "Nodding along" (family)
 ```
-A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She stands in a warm, slightly cluttered Kerala home kitchen in the evening, steel vessels on the counter, a pressure cooker on the gas stove. Her mother, a 55-year-old Malayali woman in a cotton nightie with a towel on her shoulder, talks to her from the side, out of focus. Anjali nods and gives a small polite smile, but her eyes are distant and empty. The pressure cooker suddenly whistles loudly; she flinches slightly. Camera: static medium close-up on Anjali, 50mm, mother soft in foreground left. Audio: mother speaking indistinct Malayalam, sizzling, the sharp pressure cooker whistle.
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing a simple mustard-yellow cotton kurti with three-quarter sleeves and a blue office ID lanyard (she has just come home from work). Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She stands in a warm, slightly cluttered Kerala home kitchen in the evening, steel vessels on the counter, a pressure cooker on the gas stove. Her mother, a 55-year-old Malayali woman in a cotton nightie with a towel on her shoulder, talks to her from the side, out of focus. Anjali nods and gives a small polite smile, but her eyes are distant and empty. The pressure cooker suddenly whistles loudly; she flinches slightly. Camera: static medium close-up on Anjali, 50mm, mother soft in foreground left. Audio: mother speaking indistinct Malayalam, sizzling, the sharp pressure cooker whistle.
 Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 4: "Hesitation" (the decision, on the balcony in the rain)
 ```
-A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing an oversized faded olive-green cotton t-shirt. Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She stands on a small apartment balcony at dusk during heavy monsoon rain in Kochi, coconut trees and wet rooftops behind her, blue-hour light. She holds her phone in both hands, looking down at it, thumb hovering over the screen, hesitating. She takes a deep breath, then taps the screen once. Camera: slow arc around her from behind her shoulder to her face, 35mm lens. Audio: heavy rain on a tin roof, distant thunder, her deep breath.
+A 27-year-old South Indian Malayali woman, warm medium-brown skin, long thick black hair loosely tied in a low bun with a few strands falling on her face, small black bindi, thin gold chain, wearing a simple mustard-yellow cotton kurti with three-quarter sleeves and a blue office ID lanyard (still in her work clothes). Natural face with no heavy makeup, tired eyes with faint dark circles, gentle expression. She stands on a small apartment balcony at dusk during heavy monsoon rain in Kochi, coconut trees and wet rooftops behind her, blue-hour light. She holds her phone in both hands, looking down at it, thumb hovering over the screen, hesitating. She takes a deep breath, then taps the screen once. Camera: slow arc around her from behind her shoulder to her face, 35mm lens. Audio: heavy rain on a tin roof, distant thunder, her deep breath.
 Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 
 ### SHOT 5: Phone close-up (for the Mentra screen insert)
 ```
-Extreme close-up of a young South Indian woman's hands holding a smartphone, wearing an olive-green t-shirt sleeve and a thin gold bangle, the phone screen is solid bright chroma green filling the entire screen, her thumb scrolls slowly then taps. Soft blue-hour light, raindrops on a balcony railing blurred behind. Camera: static, 100mm macro lens, shallow depth of field. Audio: rain.
+Extreme close-up of a young South Indian woman's hands holding a smartphone, wearing the three-quarter sleeve of a mustard-yellow cotton kurti, the phone screen is solid bright chroma green filling the entire screen, her thumb scrolls slowly then taps. Soft blue-hour light, raindrops on a balcony railing blurred behind. Camera: static, 100mm macro lens, shallow depth of field. Audio: rain.
 Style: photorealistic, cinematic documentary realism, shot on ARRI Alexa with vintage anamorphic lens, natural film grain, soft contrast, slightly desaturated warm tones, real skin texture, subtle handheld camera movement, natural human micro-expressions and breathing. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
 ```
 > I will replace the green screen with the real mentracare.in booking page. Don't let AI draw the app screen, because AI text comes out garbled.
