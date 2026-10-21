@@ -357,6 +357,30 @@ with wave.open(f"{WORK}/vo.wav", "wb") as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
     w.writeframes((np.clip(vo[:int(TOTAL * SR)], -1, 1) * 32767).astype(np.int16).tobytes())
 
+# Mentra badge over the Gemini sparkle (bottom right of every generated shot).
+# A solid purple disc with the white mark, so the sparkle is fully covered.
+def make_badge(d):
+    lg = Image.open(LOGO).convert("RGBA").crop((0, 0, 250, 250))
+    ss = 4; D = d * ss
+    badge = Image.new("RGBA", (D, D), (0, 0, 0, 0))
+    ImageDraw.Draw(badge).ellipse((0, 0, D - 1, D - 1), fill=P + (255,))
+    m = lg.resize((int(D * 0.68),) * 2, Image.LANCZOS)
+    white_m = Image.new("RGBA", m.size, (255, 255, 255, 255)); white_m.putalpha(m.getchannel("A"))
+    badge.alpha_composite(white_m, ((D - m.width) // 2, (D - m.height) // 2))
+    return badge.resize((d, d), Image.LANCZOS)
+BADGE = make_badge(96)        # normal shots: sparkle ~60 px at (900, 1740)
+BADGE_M = make_badge(140)     # Dr. Meera shot is cropped in, sparkle ~100 px at (945, 1849)
+def draw_badge(layer, tt):
+    if tt < S["blk"] or S["s4"] <= tt < S["end"] + XFADE["end"]:
+        if S["s7"] <= tt < S["s6b"]: b, c = BADGE_M, (945, 1849)
+        else: b, c = BADGE, (900, 1740)
+        a = 1.0
+        if tt > S["end"]:  # fade out with the dissolve into the end card
+            a = max(0.0, 1 - (tt - S["end"]) / XFADE["end"])
+        if a < 1:
+            b = b.copy(); b.putalpha(b.getchannel("A").point(lambda v: int(v * a)))
+        layer.alpha_composite(b, (c[0] - b.width // 2, c[1] - b.height // 2))
+
 cap_dir = f"{WORK}/caps"; os.makedirs(cap_dir, exist_ok=True)
 nfr = int(round(TOTAL * FPS))
 blank = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -370,6 +394,7 @@ for f in range(nfr):
     for a, b, s in SUBS:
         if a <= tt < b:
             draw_sub(layer, s, min(ease((tt - a) / 0.15), 1 - ease((tt - (b - 0.12)) / 0.12)))
+    draw_badge(layer, tt)
     layer.save(f"{cap_dir}/c{f:04d}.png", compress_level=1)
 
 # score: enters on the balcony, lifts for the morning, resolves on the end card
