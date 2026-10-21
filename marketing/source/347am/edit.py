@@ -381,6 +381,29 @@ def draw_badge(layer, tt):
             b = b.copy(); b.putalpha(b.getchannel("A").point(lambda v: int(v * a)))
         layer.alpha_composite(b, (c[0] - b.width // 2, c[1] - b.height // 2))
 
+# White "Mentra - The Healing Way" logo, top right, on every scene before the end
+# card (which carries its own logo). A soft shadow keeps it readable on bright shots.
+def make_corner_logo(width):
+    lg = Image.open("/home/user/Rasheekdev/marketing/source/347am/mentra-logo-white.png").convert("RGBA")
+    lg = lg.resize((width, round(lg.height * width / lg.width)), Image.LANCZOS)
+    pad = 30
+    out = Image.new("RGBA", (lg.width + 2 * pad, lg.height + 2 * pad), (0, 0, 0, 0))
+    sh = Image.new("RGBA", out.size, (0, 0, 0, 0))
+    sh.paste((0, 0, 0, 255), (pad, pad), lg.getchannel("A"))
+    sh = sh.filter(ImageFilter.GaussianBlur(10))
+    sh.putalpha(sh.getchannel("A").point(lambda v: int(v * 0.45)))
+    out.alpha_composite(sh); out.alpha_composite(lg, (pad, pad))
+    return out, pad
+CORNER, CPAD = make_corner_logo(250)
+def draw_corner_logo(layer, tt):
+    if tt >= S["end"] + XFADE["end"]: return
+    a = min(1.0, tt / 0.4)
+    if tt > S["end"]: a = max(0.0, 1 - (tt - S["end"]) / XFADE["end"])
+    lg = CORNER
+    if a < 1:
+        lg = lg.copy(); lg.putalpha(lg.getchannel("A").point(lambda v: int(v * a)))
+    layer.alpha_composite(lg, (W - 56 - (lg.width - CPAD), 150 - CPAD))
+
 cap_dir = f"{WORK}/caps"; os.makedirs(cap_dir, exist_ok=True)
 nfr = int(round(TOTAL * FPS))
 blank = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -395,6 +418,7 @@ for f in range(nfr):
         if a <= tt < b:
             draw_sub(layer, s, min(ease((tt - a) / 0.15), 1 - ease((tt - (b - 0.12)) / 0.12)))
     draw_badge(layer, tt)
+    draw_corner_logo(layer, tt)
     layer.save(f"{cap_dir}/c{f:04d}.png", compress_level=1)
 
 # score: enters on the balcony, lifts for the morning, resolves on the end card
