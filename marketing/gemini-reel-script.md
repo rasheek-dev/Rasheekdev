@@ -147,3 +147,12 @@ Download each clip from Gemini and name it by shot (`shot1.mp4`, `shot6a.mp4`, â
 - **It's a dramatisation, not a testimonial.** Don't caption it as a real client's story. If you want, the end card can say *"Dramatisation. Actors are AI-generated."*
 - **Keep it gentle.** There is no self-harm, crying breakdowns or "cured overnight" claims. "A little lighter" is honest.
 - If you have space, add this to the caption: *"If you're in crisis, call 112 or Tele-MANAS 14416."*
+
+---
+
+## SHOT 5 v2: new phone-screen prompt (replaces Shot 5)
+This version keeps the phone steadier, flatter to the camera and bigger in the frame. That gives a cleaner, sharper Mentra page with no wobble.
+```
+Close-up over-the-shoulder shot of a young South Indian woman holding a modern smartphone upright in her left hand at chest height, wearing the three-quarter sleeve of a mustard-yellow cotton kurti and a thin gold chain. The phone faces the camera almost straight on and fills the centre of the frame; its screen is a solid, evenly lit, bright chroma-key green (#00FF00) from edge to edge with no reflections, no glare and no icons. She holds the phone very still. After two seconds her right index finger moves in slowly and taps once near the lower middle of the screen, then moves away; the finger covers only a small part of the screen. Background: rainy Kochi balcony at blue hour, coconut trees and wet railings heavily blurred. Camera: locked-off tripod, no camera movement, 85mm lens, shallow depth of field, phone screen in sharp focus. Audio: steady rain, a soft screen tap.
+Style: photorealistic, cinematic documentary realism, natural film grain, soft contrast, real skin texture. No text, no subtitles, no logos, no watermarks, no music. Realistic ambient sound only.
+```
