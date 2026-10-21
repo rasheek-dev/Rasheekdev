@@ -34,7 +34,7 @@ EDL = [
     ("s1b", 1, 6.2, 8.0, "night", 1, ""),
     ("s2a", 2, 4.8, 6.2, "stress", 1, "lowpass=f=900"),
     ("s2b", 2, 6.2, 7.6, "stress", 0.75, "lowpass=f=700"),
-    ("s3",  3, 3.5, 6.1, "stress", 1, ""),
+    ("s3",  3, 2.4, 6.0, "stress", 1, "DINNER"),
     ("blk", None, 0, 0.9, None, 1, ""),
     ("s4",  4, 1.0, 4.6, "dusk", 1, ""),
     ("s5",  5, 1.6, 4.1, "dusk", 1, ""),
@@ -63,6 +63,18 @@ def render_segment(name, n, a, b, grade, speed, afx):
         return dst.replace(".mp4", ".mov"), dur
     src = f"{HERE}/s5_composited.mp4" if n == 5 else clip(n)
     vf = f"{GRADE[grade]},{COMMON},setpts={1/speed}*(PTS-STARTPTS),fps={FPS}"
+    if afx == "DINNER":
+        # Dinner-table replacement shot: its own audio is dropped. Underneath goes
+        # quiet, muffled home ambience from the old kitchen take, ending on the
+        # cooker whistle so the cut to black still lands.
+        dinner = glob.glob(f"{U}/*Woman_eating_dinner_with_parents*.mp4")[0]
+        filt = (f"[0:v]trim={a}:{b},{vf}[v];"
+                f"[1:a]atrim={6.1 - dur:.3f}:6.1,asetpts=PTS-STARTPTS,lowpass=f=1400,volume=0.45,"
+                f"afade=t=in:d=0.02,afade=t=out:st={dur - 0.03:.3f}:d=0.03[a]")
+        run("ffmpeg", "-v", "error", "-y", "-i", dinner, "-i", clip(3), "-filter_complex", filt, "-map", "[v]", "-map", "[a]",
+            "-t", f"{dur:.3f}", "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "pcm_s16le", "-ar", str(SR), "-ac", "2",
+            dst.replace(".mp4", ".mov"))
+        return dst.replace(".mp4", ".mov"), dur
     if afx == "LCUT":
         # Anjali's room tone under Dr. Meera's final line from clip 7.
         filt = (f"[0:v]trim={a}:{b},{vf}[v];"
@@ -253,7 +265,7 @@ VO_TAKE = f"{HERE}/vo/take1.mp3"
 VO = [
     (0.15, 4.70, S["s1a"] + 0.4, [(0.24, 1.75, "Three forty-seven a.m."), (2.48, 4.6, "Still awake. Again.")]),
     (4.82, 6.98, S["s2a"] + 0.2, [(4.88, 6.9, "At work, I hold it together.")]),
-    (7.38, 9.62, S["s3"] + 0.1, [(7.44, 9.55, "At home\u2026 I just nod along.")]),
+    (7.38, 9.62, S["s3"] + 0.6, [(7.44, 9.55, "At home\u2026 I just nod along.")]),
     (9.97, 13.22, S["s4"] + 0.25, [(10.0, 11.14, "But maybe\u2026"), (11.16, 12.2, "I don\u2019t have to carry"), (12.2, 13.15, "all of this alone.")]),
     (13.56, 14.86, S["s5"] + 0.25, [(13.6, 14.8, "So I reached out.")]),
     (15.01, 19.82, S["s8"] + 0.4, [(15.04, 17.0, "It didn\u2019t fix everything overnight."), (17.3, 18.3, "But this morning\u2026"), (18.45, 19.78, "feels a little lighter.")]),
