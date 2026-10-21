@@ -357,6 +357,39 @@ with wave.open(f"{WORK}/vo.wav", "wb") as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
     w.writeframes((np.clip(vo[:int(TOTAL * SR)], -1, 1) * 32767).astype(np.int16).tobytes())
 
+# Captions come from an ElevenLabs Scribe transcript of the finished mix
+# (words.json: word, start, end on the final timeline), so they match exactly
+# what is heard. Words are grouped into short phrases and typed on as spoken.
+WORDS = json.load(open(f"{HERE}/words.json"))
+phrases, cur = [], []
+for w in WORDS:
+    gap = w[1] - cur[-1][2] if cur else 0
+    if cur and (gap > 0.45 or len(cur) >= 5 or cur[-1][0][-1] in ".,?!"):
+        phrases.append(cur); cur = []
+    cur.append(w)
+phrases.append(cur)
+CAPS = []
+for i, ph in enumerate(phrases):
+    nxt = phrases[i + 1][0][1] if i + 1 < len(phrases) else TOTAL
+    CAPS.append((ph[0][1] - 0.06, min(ph[-1][2] + 0.45, nxt - 0.04), ph))
+
+def draw_words(layer, ph, tt, alpha, y0):
+    """Phrase pill sized for the whole phrase; words appear as they are spoken."""
+    f = F("s", 50)
+    d = ImageDraw.Draw(layer)
+    sp = d.textlength(" ", font=f)
+    widths = [d.textlength(w[0], font=f) for w in ph]
+    total = sum(widths) + sp * (len(ph) - 1)
+    x = (W - total) / 2
+    pill = Image.new("RGBA", (W, H), (0, 0, 0, 0)); pd = ImageDraw.Draw(pill)
+    pd.rounded_rectangle((x - 36, y0, x + total + 36, y0 + 92), radius=46, fill=(20, 18, 30, int(160 * alpha)))
+    for (txt, a, b), wd in zip(ph, widths):
+        k = ease((tt - a + 0.04) / 0.12)
+        if k > 0:
+            pd.text((x, y0 + 17 + 8 * (1 - k)), txt, font=f, fill=(255, 255, 255, int(255 * alpha * k)))
+        x += wd + sp
+    layer.alpha_composite(pill)
+
 cap_dir = f"{WORK}/caps"; os.makedirs(cap_dir, exist_ok=True)
 nfr = int(round(TOTAL * FPS))
 blank = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -367,9 +400,10 @@ for f in range(nfr):
         if a <= tt < b:
             fi, fo = ease((tt - a) / 0.35), 1 - ease((tt - (b - 0.2)) / 0.2)
             draw_title(layer, lines, y, size, min(fi, fo), 18 * (1 - ease((tt - a) / 0.5)))
-    for a, b, s in SUBS:
+    for a, b, ph in CAPS:
         if a <= tt < b:
-            draw_sub(layer, s, min(ease((tt - a) / 0.15), 1 - ease((tt - (b - 0.12)) / 0.12)))
+            y0 = 1500 if tt >= S["end"] else 1330   # on the end card, sit under the URL
+            draw_words(layer, ph, tt, min(ease((tt - a) / 0.12), 1 - ease((tt - (b - 0.12)) / 0.12)), y0)
     layer.save(f"{cap_dir}/c{f:04d}.png", compress_level=1)
 
 # score: enters on the balcony, lifts for the morning, resolves on the end card
