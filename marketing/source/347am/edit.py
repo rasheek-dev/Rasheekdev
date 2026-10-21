@@ -41,8 +41,8 @@ EDL = [
     ("s6a", 6, 2.0, 4.1, "lamp", 1, ""),
     ("s7",  7, 0.0, 4.4, "meera", 1, ""),
     ("s6b", 6, 4.9, 7.7, "lamp", 1, "LCUT"),   # Meera's last line plays over Anjali
-    ("s8",  8, 1.0, 5.8, "morning", 1, ""),
-    ("end", None, 0, 4.2, None, 1, ""),
+    ("s8",  8, 1.0, 6.8, "morning", 1, ""),
+    ("end", None, 0, 8.4, None, 1, ""),
 ]
 XFADE = {"s8": 0.6, "end": 0.7}   # dissolves into these; everything else is a hard cut
 
@@ -245,20 +245,47 @@ run("ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(fc), "-m
 
 # captions as an RGBA frame sequence
 S = starts
-TITLES = [  # (start, end, lines, y, size)
-    (S["s1a"] + 0.5, S["s1b"], ["3:47 AM."], 820, 120),
-    (S["s1b"] + 0.15, S["s2a"], ["Still awake.", "Again."], 780, 100),
-    (S["s2a"] + 0.2, S["s3"], ["Work."], 820, 110),
-    (S["s3"] + 0.2, S["blk"], ["Home."], 820, 110),
-    (S["s4"] + 0.5, S["s5"], ["You don’t have to", "carry it alone."], 700, 92),
-    (S["s8"] + 1.6, S["end"] + 0.2, ["A little lighter."], 1240, 100),
+TITLES = []  # the voiceover now carries what the big titles used to say
+
+# Voiceover (ElevenLabs, voice "Parul", take 1). Each line: source in/out in the
+# take, where it lands on the timeline, and its caption chunks (source times).
+VO_TAKE = f"{HERE}/vo/take1.mp3"
+VO = [
+    (0.15, 4.70, S["s1a"] + 0.4, [(0.24, 1.75, "Three forty-seven a.m."), (2.48, 4.6, "Still awake. Again.")]),
+    (4.82, 6.98, S["s2a"] + 0.2, [(4.88, 6.9, "At work, I hold it together.")]),
+    (7.38, 9.62, S["s3"] + 0.1, [(7.44, 9.55, "At home\u2026 I just nod along.")]),
+    (9.97, 13.22, S["s4"] + 0.25, [(10.0, 11.14, "But maybe\u2026"), (11.16, 12.2, "I don\u2019t have to carry"), (12.2, 13.15, "all of this alone.")]),
+    (13.56, 14.86, S["s5"] + 0.25, [(13.6, 14.8, "So I reached out.")]),
+    (15.01, 19.82, S["s8"] + 0.4, [(15.04, 17.0, "It didn\u2019t fix everything overnight."), (17.3, 18.3, "But this morning\u2026"), (18.45, 19.78, "feels a little lighter.")]),
+    (19.97, 27.62, S["end"] + 0.35, []),   # end card already shows the CTA text
 ]
 SUBS = [
-    (S["s6a"] + 0.35, S["s7"], "I don’t really know where to start."),
-    (S["s7"] + 0.0, S["s7"] + 2.4, "That’s okay."),
+    (S["s6a"] + 0.35, S["s7"], "I don\u2019t really know where to start."),
+    (S["s7"] + 0.0, S["s7"] + 2.4, "That\u2019s okay."),
     (S["s7"] + 3.3, S["s6b"], "Start anywhere."),
-    (S["s6b"] + 0.05, S["s6b"] + durs["s6b"] - 0.1, "I’m listening."),
+    (S["s6b"] + 0.05, S["s6b"] + durs["s6b"] - 0.1, "I\u2019m listening."),
 ]
+DIALOGUE = list(SUBS)
+for a, b, at, caps in VO:
+    for ca, cb, txt in caps:
+        SUBS.append((at + ca - a, at + cb - a + 0.12, txt))
+VO_SPANS = [(at, at + b - a) for a, b, at, _ in VO]
+
+# Build the VO track: each line cut from the take and dropped at its slot.
+raw = subprocess.run(["ffmpeg", "-v", "error", "-i", VO_TAKE, "-ac", "2", "-ar", str(SR), "-f", "f32le", "-"],
+                     capture_output=True, check=True).stdout
+take = np.frombuffer(raw, np.float32).reshape(-1, 2)
+vo = np.zeros((int(TOTAL * SR) + SR, 2), np.float32)
+for a, b, at, _ in VO:
+    seg = take[int(a * SR):int(b * SR)].copy()
+    n = len(seg); r = int(0.015 * SR)
+    seg[:r] *= np.linspace(0, 1, r)[:, None]; seg[-r:] *= np.linspace(1, 0, r)[:, None]
+    i0 = int(at * SR); vo[i0:i0 + n] += seg
+import wave
+with wave.open(f"{WORK}/vo.wav", "wb") as w:
+    w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
+    w.writeframes((np.clip(vo[:int(TOTAL * SR)], -1, 1) * 32767).astype(np.int16).tobytes())
+
 cap_dir = f"{WORK}/caps"; os.makedirs(cap_dir, exist_ok=True)
 nfr = int(round(TOTAL * FPS))
 blank = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -277,16 +304,19 @@ for f in range(nfr):
 # score: enters on the balcony, lifts for the morning, resolves on the end card
 music = f"{WORK}/score.wav"
 piano(TOTAL, score_events(S["s4"] + 0.2, S["s8"] + 0.3, TOTAL), music)
-# duck the score under dialogue
-duck = "+".join(f"between(t,{a - 0.1:.2f},{b:.2f})" for a, b, _ in SUBS)
+# duck the score under dialogue and voiceover; dip the location sound under VO
+duck = "+".join(f"between(t,{a - 0.15:.2f},{b + 0.1:.2f})" for a, b in [(x, y) for x, y, _ in DIALOGUE] + VO_SPANS)
+vduck = "+".join(f"between(t,{a - 0.1:.2f},{b + 0.1:.2f})" for a, b in VO_SPANS)
 mstart = S["s4"] + 0.2
 fade_out_st = TOTAL - 1.8
 
-run("ffmpeg", "-v", "error", "-y", "-i", f"{WORK}/cut.mov", "-framerate", str(FPS), "-i", f"{cap_dir}/c%04d.png", "-i", music,
+run("ffmpeg", "-v", "error", "-y", "-i", f"{WORK}/cut.mov", "-framerate", str(FPS), "-i", f"{cap_dir}/c%04d.png", "-i", music, "-i", f"{WORK}/vo.wav",
     "-filter_complex",
     f"[0:v][1:v]overlay=0:0:format=auto[v];"
     f"[2:a]atrim=0:{TOTAL},volume='if({duck},0.35,1)':eval=frame,afade=t=in:st={mstart:.2f}:d=1.5,afade=t=out:st={fade_out_st:.2f}:d=1.8,volume=0.55[m];"
-    f"[0:a]volume=1.0[d];[d][m]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]",
+    f"[0:a]volume='if({vduck},0.55,1)':eval=frame[d];"
+    f"[3:a]highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=5:release=120,volume=1.6[vo];"
+    f"[d][m][vo]amix=inputs=3:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]",
     "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-maxrate", "16M", "-bufsize", "32M", "-profile:v", "high", "-pix_fmt", "yuv420p",
     "-r", str(FPS), "-c:a", "aac", "-b:a", "256k", "-ar", str(SR), "-movflags", "+faststart", OUT)
 print("wrote", OUT)
