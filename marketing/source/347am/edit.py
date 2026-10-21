@@ -64,13 +64,11 @@ def render_segment(name, n, a, b, grade, speed, afx):
     src = f"{HERE}/s5_composited.mp4" if n == 5 else clip(n)
     vf = f"{GRADE[grade]},{COMMON},setpts={1/speed}*(PTS-STARTPTS),fps={FPS}"
     if afx == "DINNER":
-        # Dinner-table replacement shot: its own audio is dropped. Underneath goes
-        # quiet, muffled home ambience from the old kitchen take, ending on the
-        # cooker whistle so the cut to black still lands.
+        # Dinner-table replacement shot: no location sound at all, only the
+        # voiceover plays over it.
         dinner = glob.glob(f"{U}/*Woman_eating_dinner_with_parents*.mp4")[0]
         filt = (f"[0:v]trim={a}:{b},{vf}[v];"
-                f"[1:a]atrim={6.1 - dur:.3f}:6.1,asetpts=PTS-STARTPTS,lowpass=f=1400,volume=0.45,"
-                f"afade=t=in:d=0.02,afade=t=out:st={dur - 0.03:.3f}:d=0.03[a]")
+                f"anullsrc=r={SR}:cl=stereo,atrim=0:{dur:.3f}[a]")
         run("ffmpeg", "-v", "error", "-y", "-i", dinner, "-i", clip(3), "-filter_complex", filt, "-map", "[v]", "-map", "[a]",
             "-t", f"{dur:.3f}", "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "pcm_s16le", "-ar", str(SR), "-ac", "2",
             dst.replace(".mp4", ".mov"))
@@ -131,42 +129,103 @@ def draw_sub(layer, s, alpha):
 
 # ---- end card ---------------------------------------------------------------
 def end_card(out_dir, dur):
+    """Solid Mentra purple. The mark blooms petal by petal from its centre dot,
+    then slides left as the wordmark wipes in, and the CTA rises underneath."""
+    import cv2
     os.makedirs(out_dir, exist_ok=True)
+    SS = 3  # supersample the logo so the scaled mark stays crisp
     logo = Image.open(LOGO).convert("RGBA")
-    mark = logo.crop((0, 0, 250, 250))
-    word = logo.resize((440, 110), Image.LANCZOS)
+    big = np.asarray(logo.resize((logo.width * SS, logo.height * SS), Image.LANCZOS)).astype(np.float32)
+    alpha = big[..., 3]
+    white = lambda al: np.dstack([np.full(al.shape, 255, np.float32)] * 3 + [al])
+    # split the mark (left of x=242 in the source) into its petals and centre dot
+    mark_a = alpha[:, :242 * SS].copy()
+    n, lab, st, cen = cv2.connectedComponentsWithStats((mark_a > 30).astype(np.uint8), 8)
+    centre = np.array([124, 125], np.float32) * SS
+    parts = []
+    for i in range(1, n):
+        m = (lab == i)
+        if st[i, cv2.CC_STAT_AREA] < 50 * SS * SS: continue
+        al = np.where(cv2.dilate(m.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0, mark_a, 0)
+        is_dot = np.linalg.norm(cen[i] - centre) < 20 * SS
+        ang = math.atan2(cen[i][1] - centre[1], cen[i][0] - centre[0])
+        parts.append((is_dot, ang, white(al)))
+    dot = [p for p in parts if p[0]][0][2]
+    petals = sorted([p for p in parts if not p[0]], key=lambda p: p[1])
+    word_x0 = 290 * SS
+    word = white(alpha[:, word_x0:].copy())
+    MH = mark_a.shape[0]
+
+    def place(canvas, rgba, cx, cy, scale, rot=0.0, about=None, alpha_mul=1.0):
+        """Affine-composite an RGBA float layer onto a float RGB canvas."""
+        h, w = rgba.shape[:2]
+        about = centre if about is None else about
+        M = cv2.getRotationMatrix2D((float(about[0]), float(about[1])), rot, scale / SS)
+        M[0, 2] += cx - about[0]; M[1, 2] += cy - about[1]
+        warped = cv2.warpAffine(rgba, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=(0, 0, 0, 0))
+        a = warped[..., 3:4] / 255 * alpha_mul
+        canvas[:] = canvas * (1 - a) + warped[..., :3] * a
+
+    def back(x):  # ease-out with a little overshoot
+        x = max(0.0, min(1.0, x)); c = 1.7
+        return 1 + (c + 1) * (x - 1) ** 3 + c * (x - 1) ** 2
+
+    f_head, f_sub, f_btn, f_url, f_tiny = F("b", 88), F("m", 40), F("s", 54), F("s", 52), F("r", 30)
+    lock_scale = 0.78                                 # final mark+word lockup scale
+    lock_w = (1000 - 0) * lock_scale                  # source logo is 1000 px wide
+    lock_x0, lock_cy = (W - lock_w) / 2, 560
     for f in range(int(round(dur * FPS))):
-        t = f / FPS
-        s = 4
-        bg = Image.new("RGB", (W // s, H // s), SP)
-        d = ImageDraw.Draw(bg)
-        for col, cx, cy, r, sp, ph in [(P, .2, .2, 120, .3, 0), (PK, .85, .5, 105, .25, 2), ((44, 232, 182), .3, .88, 110, .35, 4)]:
-            x = cx * W / s + 30 * math.sin(t * sp + ph); y = cy * H / s + 40 * math.cos(t * sp + ph)
-            tint = tuple(int(SP[i] * .55 + col[i] * .45) for i in range(3))
-            d.ellipse((x - r, y - r, x + r, y + r), fill=tint)
-        c = bg.filter(ImageFilter.GaussianBlur(70)).resize((W, H), Image.BICUBIC).convert("RGBA")
-        e = ease((t - 0.2) / 0.8)
-        m = mark.resize((int(230 * (.85 + .15 * e)),) * 2, Image.LANCZOS).rotate(-30 * (1 - e), resample=Image.BICUBIC)
-        m.putalpha(m.getchannel("A").point(lambda v: int(v * e)))
-        c.alpha_composite(m, ((W - m.width) // 2, 470 - (m.height - 230) // 2))
-        L = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(L)
-        def ctext(y, s, font, fill, a):
-            w = d.textlength(s, font=font); d.text(((W - w) / 2, y), s, font=font, fill=fill[:3] + (int(255 * a),))
-        a1 = ease((t - 0.5) / 0.5); a2 = ease((t - 0.9) / 0.5); a3 = ease((t - 1.3) / 0.5)
-        ctext(780, "You don’t have to", F("b", 92), INK, a1)
-        ctext(890, "carry it alone.", F("b", 92), INK, a1)
-        ctext(1050, "Licensed psychologists · Malayalam & English", F("m", 40), (90, 88, 110), a2)
-        # button
-        f_btn = F("s", 54); label = "Book a session"; bw = d.textlength(label, font=f_btn) + 150
-        pulse = 1 + 0.025 * math.sin(max(0, t - 1.8) * 4)
-        bh = 128 * pulse; bw *= pulse; y0 = 1170
-        d.rounded_rectangle(((W - bw) / 2, y0, (W + bw) / 2, y0 + bh), radius=int(bh / 2), fill=P + (int(255 * a3),))
-        bb = d.textbbox((0, 0), label, font=f_btn)
-        d.text(((W - (bb[2] - bb[0])) / 2 - bb[0], y0 + (bh - (bb[3] - bb[1])) / 2 - bb[1]), label, font=f_btn, fill=(255, 255, 255, int(255 * a3)))
-        ctext(1350, "mentracare.in", F("s", 54), PK, a3)
-        ctext(1745, "Dramatisation · AI-generated actors", F("r", 30), (120, 118, 140), a3 * 0.9)
-        c.alpha_composite(L)
-        c.convert("RGB").save(f"{out_dir}/f{f:04d}.png", compress_level=1)
+        t = f / FPS - 0.6  # hold on plain purple until the dissolve from the morning shot is done
+        canvas = np.empty((H, W, 3), np.float32); canvas[:] = P
+        # soft light bloom behind the mark as it opens
+        g = ease((t - 0.25) / 0.6) * (1 - ease((t - 1.4) / 0.9))
+        if g > 0:
+            yy, xx = np.ogrid[:H, :W]
+            cx_m = W / 2 if t < 1.3 else W / 2 + (lock_x0 + 124 * lock_scale - W / 2) * ease((t - 1.3) / 0.7)
+            glow = np.exp(-(((xx - cx_m) ** 2 + (yy - 640) ** 2) / (2 * 260.0 ** 2)))[..., None]
+            canvas += glow * 70 * g
+        # mark position/scale: big and centred while blooming, then into the lockup
+        mv = ease((t - 1.3) / 0.7)
+        m_scale = 1.45 + (lock_scale - 1.45) * mv
+        m_cx = W / 2 + (lock_x0 + 124 * lock_scale - W / 2) * mv
+        m_cy = 640 + (lock_cy - 640) * mv
+        # centre dot pops first
+        d = back((t - 0.15) / 0.35)
+        if d > 0: place(canvas, dot, m_cx, m_cy, m_scale * max(d, 0.001), alpha_mul=min(1, d * 2))
+        # petals unfold one after another, spinning out from the dot
+        for k, (_, _, pet) in enumerate(petals):
+            p = back((t - 0.35 - k * 0.09) / 0.55)
+            if p <= 0: continue
+            place(canvas, pet, m_cx, m_cy, m_scale * (0.35 + 0.65 * p), rot=-70 * (1 - min(p, 1)), alpha_mul=min(1, p * 1.6))
+        # wordmark wipes in from behind the mark
+        wv = ease((t - 1.45) / 0.7)
+        if wv > 0:
+            layer = word.copy()
+            cut = int(layer.shape[1] * wv)
+            layer[:, cut:, 3] = 0
+            if 8 < cut < layer.shape[1]:  # feather the wipe edge while it moves
+                fe = min(cut, 30 * SS); layer[:, cut - fe:cut, 3] *= np.linspace(1, 0, fe)[None, :]
+            wx = lock_x0 + 290 * lock_scale + 30 * (1 - wv)
+            place(canvas, layer, wx, m_cy, m_scale, about=(0, MH / 2), alpha_mul=wv)
+        img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8)).convert("RGBA")
+        L = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d2 = ImageDraw.Draw(L)
+        def ctext(y, s, font, fill, a, rise=0):
+            w = d2.textlength(s, font=font)
+            d2.text(((W - w) / 2, y + rise * (1 - a)), s, font=font, fill=fill + (int(255 * a),))
+        a1, a2, a3, a4 = (ease((t - x) / 0.5) for x in (2.1, 2.45, 2.8, 3.1))
+        ctext(800, "You don\u2019t have to", f_head, (255, 255, 255), a1, 24)
+        ctext(905, "carry it alone.", f_head, (255, 255, 255), a1, 24)
+        ctext(1060, "Licensed psychologists \u00b7 Malayalam & English", f_sub, (226, 222, 255), a2, 16)
+        label = "Book a session"; bw = d2.textlength(label, font=f_btn) + 150
+        pulse = 1 + 0.025 * math.sin(max(0, t - 3.6) * 4)
+        bh = 128 * pulse; bw *= pulse; y0 = 1175 + 20 * (1 - a3)
+        d2.rounded_rectangle(((W - bw) / 2, y0, (W + bw) / 2, y0 + bh), radius=int(bh / 2), fill=(255, 255, 255, int(255 * a3)))
+        bb = d2.textbbox((0, 0), label, font=f_btn)
+        d2.text(((W - (bb[2] - bb[0])) / 2 - bb[0], y0 + (bh - (bb[3] - bb[1])) / 2 - bb[1]), label, font=f_btn, fill=P + (int(255 * a3),))
+        ctext(1365, "mentracare.in", f_url, (255, 255, 255), a4, 14)
+        ctext(1745, "Dramatisation \u00b7 AI-generated actors", f_tiny, (200, 195, 245), a4 * 0.9)
+        img.alpha_composite(L)
+        img.convert("RGB").save(f"{out_dir}/f{f:04d}.png", compress_level=1)
 
 # ---- score ----------------------------------------------------------------
 def piano(dur_total, events, path):
